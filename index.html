@@ -2,7 +2,9 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>読む — Yomu</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@300;400;700&family=Noto+Sans+JP:wght@300;400&family=Shippori+Mincho:wght@400;700&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
 <style>
@@ -75,7 +77,7 @@
 
   /* story text */
   .story-text{color:var(--paper);line-height:2.6;font-size:1.1rem;margin-bottom:2rem;}
-  .word-token{display:inline;position:relative;cursor:pointer;border-radius:2px;padding:0 1px;transition:background 0.15s;}
+
   .word-token:hover{background:var(--highlight);}
   .word-token.has-kanji{border-bottom:1px dotted rgba(196,119,58,0.45);}
   .word-token.clicked{background:rgba(139,26,26,0.18);}
@@ -98,10 +100,7 @@
   .para-play-btn.playing{border-color:var(--accent2);background:rgba(196,119,58,0.08);}
   .para-play-btn.playing span{color:var(--accent2);}
 
-  /* tooltip word speaker */
-  .tt-speak-btn{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;border:1px solid rgba(26,20,16,0.2);background:none;cursor:pointer;margin-left:6px;vertical-align:middle;transition:all 0.15s;flex-shrink:0;}
-  .tt-speak-btn:hover{background:rgba(139,26,26,0.1);border-color:var(--accent);}
-  .tt-speak-btn svg{width:9px;height:9px;fill:var(--accent);}
+
 
   /* part actions */
   .part-actions{display:flex;align-items:center;gap:12px;margin-top:0.5rem;padding-top:1.5rem;border-top:1px solid rgba(255,255,255,0.06);}
@@ -159,6 +158,64 @@
   .matcher-result-label{font-size:0.78rem;color:var(--muted);}
   .matcher-result-label.perfect{color:#1D9E75;}
 
+
+  /* ── READING PROGRESS LINE ── */
+  #reading-progress{position:fixed;left:0;top:0;width:3px;height:0%;background:var(--accent2);z-index:200;transition:height 0.1s linear;opacity:0.7;border-radius:0 2px 2px 0;}
+
+  /* ── FONT SIZE ── */
+  .story-text.fs-sm{font-size:0.95rem;}
+  .story-text.fs-md{font-size:1.1rem;}
+  .story-text.fs-lg{font-size:1.3rem;}
+  .story-text.fs-xl{font-size:1.5rem;}
+  .font-ctrl{display:flex;align-items:center;gap:2px;}
+  .font-btn{font-size:0.7rem;color:var(--paper);opacity:0.45;border:1px solid rgba(255,255,255,0.12);background:none;padding:0.25rem 0.5rem;border-radius:1px;cursor:pointer;transition:opacity 0.2s;line-height:1;}
+  .font-btn:hover{opacity:1;}
+
+  /* ── WORD TOKEN — bigger mobile tap target ── */
+  .word-token{display:inline;position:relative;cursor:pointer;border-radius:2px;padding:2px 3px;margin:0 1px;transition:background 0.15s;-webkit-tap-highlight-color:transparent;}
+  .word-token:active{background:var(--highlight);}
+
+  /* ── BOTTOM SHEET (replaces tooltip) ── */
+  #sheet-overlay{position:fixed;inset:0;background:rgba(0,0,0,0);z-index:300;pointer-events:none;transition:background 0.25s;}
+  #sheet-overlay.open{background:rgba(0,0,0,0.5);pointer-events:all;}
+  #word-sheet{
+    position:fixed;bottom:0;left:0;right:0;z-index:301;
+    background:#22201c;border-radius:16px 16px 0 0;
+    padding:0 0 env(safe-area-inset-bottom,0);
+    transform:translateY(100%);transition:transform 0.3s cubic-bezier(0.32,0.72,0,1);
+    max-width:640px;margin:0 auto;
+  }
+  #word-sheet.open{transform:translateY(0);}
+  .sheet-handle{width:36px;height:4px;background:rgba(255,255,255,0.15);border-radius:2px;margin:12px auto 0;}
+  .sheet-body{padding:1.25rem 1.5rem 1.5rem;}
+  .sheet-reading{font-family:'Shippori Mincho',serif;font-size:2rem;color:var(--paper);line-height:1.2;margin-bottom:0.25rem;}
+  .sheet-romaji{font-size:0.75rem;color:var(--muted);letter-spacing:0.08em;margin-bottom:0.75rem;}
+  .sheet-meaning{font-size:1.1rem;color:var(--paper);margin-bottom:1rem;line-height:1.5;}
+  .sheet-meta{display:flex;align-items:center;gap:10px;margin-bottom:1rem;}
+  .sheet-level{font-size:0.68rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--accent2);border:1px solid rgba(196,119,58,0.3);padding:0.2rem 0.6rem;border-radius:1px;}
+  .sheet-actions{display:flex;gap:10px;}
+  .sheet-speak-btn{flex:1;display:flex;align-items:center;justify-content:center;gap:8px;padding:0.75rem;border:1px solid rgba(255,255,255,0.15);background:none;border-radius:2px;color:var(--paper);cursor:pointer;font-family:'Noto Sans JP',sans-serif;font-size:0.82rem;transition:all 0.15s;}
+  .sheet-speak-btn:hover,.sheet-speak-btn:active{background:rgba(255,255,255,0.06);border-color:rgba(255,255,255,0.3);}
+  .sheet-speak-btn svg{width:14px;height:14px;fill:var(--accent2);}
+  .sheet-close-btn{padding:0.75rem 1.25rem;border:1px solid rgba(255,255,255,0.1);background:none;border-radius:2px;color:var(--muted);cursor:pointer;font-size:0.82rem;transition:all 0.15s;}
+  .sheet-close-btn:active{background:rgba(255,255,255,0.06);}
+
+  /* ── GRAMMAR SPOTLIGHT ── */
+  .grammar-section{margin-top:1.5rem;border:1px solid rgba(196,119,58,0.2);border-radius:2px;background:rgba(196,119,58,0.04);overflow:hidden;}
+  .grammar-toggle{width:100%;display:flex;align-items:center;justify-content:space-between;padding:0.75rem 1rem;background:none;border:none;cursor:pointer;color:var(--accent2);font-size:0.68rem;letter-spacing:0.12em;text-transform:uppercase;font-family:'Noto Sans JP',sans-serif;}
+  .grammar-toggle svg{width:12px;height:12px;fill:var(--accent2);transition:transform 0.2s;flex-shrink:0;}
+  .grammar-toggle.open svg{transform:rotate(180deg);}
+  .grammar-body{display:none;padding:0 1rem 1rem;}
+  .grammar-body.open{display:block;}
+  .grammar-item{margin-bottom:0.75rem;}
+  .grammar-item:last-child{margin-bottom:0;}
+  .grammar-pattern{font-family:'Shippori Mincho',serif;font-size:1rem;color:var(--accent2);margin-bottom:0.2rem;}
+  .grammar-desc{font-size:0.78rem;color:var(--muted);margin-bottom:0.3rem;line-height:1.5;}
+  .grammar-example{font-size:0.88rem;color:rgba(245,240,232,0.7);line-height:1.8;border-left:2px solid rgba(196,119,58,0.3);padding-left:0.75rem;}
+
+  /* ── SWIPE HINT ── */
+  .swipe-hint{font-size:0.62rem;color:rgba(122,112,96,0.35);text-align:center;margin-top:0.75rem;letter-spacing:0.06em;}
+
   /* difficulty */
   .difficulty-bar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
   .difficulty-label{font-size:0.68rem;letter-spacing:0.1em;color:var(--muted);text-transform:uppercase;}
@@ -176,12 +233,7 @@
   .vocab-pill:hover{border-color:var(--accent2);}
   .vocab-pill span{color:var(--muted);font-size:0.72rem;margin-left:4px;}
 
-  /* tooltip */
-  .tooltip{position:fixed;background:var(--paper);color:var(--ink);border-radius:2px;padding:0.75rem 1rem;font-size:0.82rem;max-width:240px;pointer-events:none;z-index:1000;box-shadow:0 8px 32px rgba(0,0,0,0.4),0 0 0 1px rgba(26,20,16,0.12);opacity:0;transform:translateY(4px);transition:opacity 0.15s,transform 0.15s;}
-  .tooltip.visible{opacity:1;transform:translateY(0);}
-  .tooltip-reading{font-family:'Shippori Mincho',serif;font-size:1.1rem;color:var(--accent);margin-bottom:0.25rem;}
-  .tooltip-meaning{color:var(--ink);line-height:1.5;}
-  .tooltip-level{font-size:0.65rem;letter-spacing:0.1em;color:var(--muted);margin-top:0.35rem;}
+  /* tooltip replaced by bottom sheet */
 
   /* footer */
   .story-footer{font-size:0.7rem;letter-spacing:0.1em;color:var(--muted);margin-top:2rem;text-align:center;line-height:2;}
@@ -210,15 +262,26 @@
 </head>
 <body>
 
-<div class="tooltip" id="tooltip">
-  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.25rem;">
-    <div class="tooltip-reading" id="tt-reading" style="margin-bottom:0;"></div>
-    <button class="tt-speak-btn" onclick="speakWord()" title="Hear pronunciation">
-      <svg viewBox="0 0 10 10"><polygon points="1,2 4,2 7,0 7,10 4,8 1,8"/><path d="M8,3 Q10,5 8,7" stroke="currentColor" stroke-width="1" fill="none"/></svg>
-    </button>
+<div id="reading-progress"></div>
+
+<div id="sheet-overlay" onclick="closeSheet()"></div>
+<div id="word-sheet">
+  <div class="sheet-handle"></div>
+  <div class="sheet-body">
+    <div class="sheet-reading" id="sheet-reading"></div>
+    <div class="sheet-romaji" id="sheet-romaji"></div>
+    <div class="sheet-meaning" id="sheet-meaning"></div>
+    <div class="sheet-meta">
+      <span class="sheet-level" id="sheet-level"></span>
+    </div>
+    <div class="sheet-actions">
+      <button class="sheet-speak-btn" onclick="speakWord()">
+        <svg viewBox="0 0 12 12"><polygon points="1,2 5,2 9,0 9,12 5,10 1,10"/><path d="M10,3.5 Q12,6 10,8.5" stroke="#c4773a" stroke-width="1.2" fill="none" stroke-linecap="round"/></svg>
+        Hear pronunciation
+      </button>
+      <button class="sheet-close-btn" onclick="closeSheet()">Close</button>
+    </div>
   </div>
-  <div class="tooltip-meaning" id="tt-meaning"></div>
-  <div class="tooltip-level" id="tt-level"></div>
 </div>
 
 <div id="loading-overlay">
@@ -260,7 +323,11 @@
         <span class="ring-label" id="ring-label">0 today</span>
       </div>
       <button class="icon-btn" onclick="newStory()">+ New story</button>
-      <button class="icon-btn" id="furigana-btn" onclick="toggleFurigana()">振り仮名 off</button>
+      <button class="icon-btn" id="furigana-btn" onclick="toggleFurigana()">振り仮名</button>
+      <div class="font-ctrl">
+        <button class="font-btn" onclick="changeFontSize(-1)">A−</button>
+        <button class="font-btn" onclick="changeFontSize(1)">A+</button>
+      </div>
     </div>
   </div>
   <div class="progress-bar"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
@@ -347,6 +414,7 @@ let state = {
   easyCount: 0,
   hardCount: 0,
   furiganaAll: false,
+  fontSize: 2,
   arcKanjiWords: [],   // accumulates kanji tokens across all 3 parts
   // current arc
   arc: null,        // { title, title_en, genre, summary, imagePrompt, part: 1|2|3 }
@@ -361,6 +429,7 @@ function saveState() {
   localStorage.setItem('yomu-v3', JSON.stringify({
     level: state.level,
     currentModel: state.currentModel,
+    fontSize: state.fontSize,
     storiesRead: state.storiesRead,
     todayCount: state.todayCount,
     todayDate: state.todayDate,
@@ -381,6 +450,7 @@ function loadSavedState() {
       const p = JSON.parse(saved);
       Object.assign(state, p);
     // Ensure model is valid
+    if (state.fontSize === undefined) state.fontSize = 2;
     if (!MODEL_CHAIN.includes(state.currentModel)) {
       state.currentModel = MODEL_CHAIN[0];
       localStorage.setItem('yomu-key', state.apiKey); // trigger re-save on next saveState
@@ -533,6 +603,13 @@ Return ONLY valid JSON, no markdown:
   "title_en": "English title",
   "genre": "genre tag in Japanese (日常・旅行・謎 etc)",
   "summary": "1-sentence English summary of what happened, for story continuation",
+  "grammar": [
+    {
+      "pattern": "grammar pattern (e.g. ている)",
+      "description": "brief English explanation (max 15 words)",
+      "example": "exact sentence from the story using this pattern"
+    }
+  ],
   "sentences": [
     { "tokens": [
       { "surface": "東京", "reading": "とうきょう", "meaning": "Tokyo", "level": "N5", "has_kanji": true }
@@ -579,6 +656,7 @@ ${seenList ? `Try to reuse: ${seenList}` : ''}
 Return ONLY valid JSON, no markdown:
 {
   "summary": "Updated 1-sentence summary of the full story so far (for Part ${partNum < 3 ? '3' : 'final'})",
+  "grammar": [{"pattern":"...","description":"...","example":"..."}],
   "sentences": [
     { "tokens": [
       { "surface": "東京", "reading": "とうきょう", "meaning": "Tokyo", "level": "N5", "has_kanji": true }
@@ -750,7 +828,7 @@ function buildSentencesHTML(sentences) {
       const enc = encodeURIComponent(JSON.stringify({
         s: token.surface, r: token.reading||'', m: token.meaning||'', l: token.level||''
       }));
-      tokensHTML += `<span class="${cls}" data-token="${enc}" onclick="handleWordClick(this)" onmouseenter="showTooltip(this,event)" onmouseleave="hideTooltip()">${token.surface}</span>`;
+      tokensHTML += `<span class="${cls}" data-token="${enc}" onclick="handleWordClick(this)">${token.surface}</span>`;
       if (token.meaning && token.meaning.length > 2 &&
           !skipMeanings.some(p => (token.meaning||'').toLowerCase().includes(p))) {
         vocabEntries.push(token);
@@ -857,7 +935,8 @@ function renderPart(result, partNum) {
       <div class="vocab-panel-title">Vocabulary in this part</div>
       <div class="vocab-list">${vocabHTML}</div>
     </div>
-    <div class="keyboard-hint"><kbd>Space</kbd> continue / new story &nbsp;&nbsp; <kbd>F</kbd> toggle furigana</div>
+    <div class="keyboard-hint"><kbd>Space</kbd> continue &nbsp; <kbd>F</kbd> furigana</div>
+      <div class="swipe-hint">swipe left for next part</div>
     <div class="story-footer">${state.storiesRead} ${state.storiesRead === 1 ? 'story' : 'stories'} read · ${Object.keys(state.seenWords).length} words encountered</div>`;
 
   updateHeader();
@@ -1079,47 +1158,39 @@ function handleWordClick(el) {
   }
 }
 
-let tooltipTimeout;
 let currentTooltipWord = null;
-function showTooltip(el, event) {
-  clearTimeout(tooltipTimeout);
-  const data = JSON.parse(decodeURIComponent(el.dataset.token));
+const FONT_CLASSES = ['fs-sm','fs-md','fs-lg','fs-xl'];
+function openSheet(data) {
   if (!data.m || data.m.length < 2) return;
-  const tt = document.getElementById('tooltip');
-  document.getElementById('tt-reading').textContent = data.r || data.s;
-  document.getElementById('tt-meaning').textContent = data.m;
-  document.getElementById('tt-level').textContent = data.l ? `JLPT ${data.l}` : '';
-  const x = Math.min(event.clientX + 12, window.innerWidth - 260);
-  const y = Math.max(event.clientY - 90, 10);
-  tt.style.left = x + 'px';
-  tt.style.top = y + 'px';
-  tt.style.transform = '';
-  tt.classList.add('visible');
+  document.getElementById('sheet-reading').textContent = data.s;
+  document.getElementById('sheet-romaji').textContent = data.r || '';
+  document.getElementById('sheet-meaning').textContent = data.m;
+  const lvl = document.getElementById('sheet-level');
+  lvl.textContent = data.l ? 'JLPT ' + data.l : '';
+  lvl.style.display = data.l ? '' : 'none';
   currentTooltipWord = { reading: data.r, surface: data.s };
+  document.getElementById('word-sheet').classList.add('open');
+  document.getElementById('sheet-overlay').classList.add('open');
 }
 
-function hideTooltip() {
-  tooltipTimeout = setTimeout(() => document.getElementById('tooltip').classList.remove('visible'), 150);
-}
-
-function dismissTooltip() {
-  clearTimeout(tooltipTimeout);
-  document.getElementById('tooltip').classList.remove('visible');
+function closeSheet() {
+  document.getElementById('word-sheet').classList.remove('open');
+  document.getElementById('sheet-overlay').classList.remove('open');
   currentTooltipWord = null;
 }
+
+// keep old names as aliases so nothing breaks
+function showTooltip(el, event) {
+  const data = JSON.parse(decodeURIComponent(el.dataset.token));
+  openSheet(data);
+}
+function hideTooltip() {}
+function dismissTooltip() { closeSheet(); }
 
 function handleVocabPillClick(surface, reading, meaning, level) {
   state.seenWords[surface] = (state.seenWords[surface] || 0) + 1;
   saveState();
-  const tt = document.getElementById('tooltip');
-  document.getElementById('tt-reading').textContent = `${surface}　${reading}`;
-  document.getElementById('tt-meaning').textContent = meaning;
-  document.getElementById('tt-level').textContent = level ? `JLPT ${level}` : '';
-  tt.style.left = '50%';
-  tt.style.top = '50%';
-  tt.style.transform = 'translate(-50%,-50%)';
-  tt.classList.add('visible');
-  setTimeout(() => { tt.classList.remove('visible'); tt.style.transform = ''; }, 2200);
+  openSheet({ s: surface, r: reading, m: meaning, l: level });
 }
 
 // ── AUDIO ────────────────────────────────────────────────────────────────────
@@ -1183,15 +1254,79 @@ function speakWord() {
   window.speechSynthesis.speak(utter);
 }
 
-// ── TAP OUTSIDE TO DISMISS TOOLTIP ──────────────────────────────────────────
-document.addEventListener('click', e => {
-  const tt = document.getElementById('tooltip');
-  if (!tt.classList.contains('visible')) return;
-  // If click is not on a word-token or the tooltip itself, dismiss
-  if (!e.target.closest('.word-token') && !e.target.closest('.tooltip') && !e.target.closest('.vocab-pill')) {
-    dismissTooltip();
+// Sheet closes via overlay click (handled inline) or close button
+
+// ── FONT SIZE ────────────────────────────────────────────────────────────────
+function changeFontSize(dir) {
+  state.fontSize = Math.max(0, Math.min(3, (state.fontSize||2) + dir));
+  applyFontSize();
+  saveState();
+}
+
+function applyFontSize() {
+  const el = document.getElementById('story-text');
+  if (!el) return;
+  FONT_CLASSES.forEach(c => el.classList.remove(c));
+  el.classList.add(FONT_CLASSES[state.fontSize]);
+}
+
+// ── READING PROGRESS LINE ─────────────────────────────────────────────────────
+function updateReadingProgress() {
+  const bar = document.getElementById('reading-progress');
+  if (!bar) return;
+  const scrollTop = window.scrollY;
+  const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+  const pct = docHeight > 0 ? Math.min((scrollTop / docHeight) * 100, 100) : 0;
+  bar.style.height = pct + '%';
+}
+window.addEventListener('scroll', updateReadingProgress, { passive: true });
+
+// ── SWIPE GESTURES ────────────────────────────────────────────────────────────
+let swipeStartX = 0, swipeStartY = 0;
+
+document.addEventListener('touchstart', e => {
+  swipeStartX = e.touches[0].clientX;
+  swipeStartY = e.touches[0].clientY;
+}, { passive: true });
+
+document.addEventListener('touchend', e => {
+  if (document.getElementById('word-sheet').classList.contains('open')) return;
+  const dx = e.changedTouches[0].clientX - swipeStartX;
+  const dy = e.changedTouches[0].clientY - swipeStartY;
+  if (Math.abs(dx) < 60 || Math.abs(dy) > Math.abs(dx) * 0.8) return;
+  if (dx < -60) {
+    // swipe left = next
+    if (state.currentPart > 0 && state.currentPart < 3) continuePart();
+    else if (state.currentPart === 3) newStory();
+  } else if (dx > 60) {
+    // swipe right = nothing for now (could go back to part 1 in future)
   }
-});
+}, { passive: true });
+
+// ── GRAMMAR SPOTLIGHT ─────────────────────────────────────────────────────────
+function toggleGrammar(btn) {
+  const body = btn.nextElementSibling;
+  const isOpen = body.classList.toggle('open');
+  btn.classList.toggle('open', isOpen);
+}
+
+function buildGrammarHTML(grammarItems) {
+  if (!grammarItems || grammarItems.length === 0) return '';
+  const itemsHTML = grammarItems.map(g => `
+    <div class="grammar-item">
+      <div class="grammar-pattern">${g.pattern}</div>
+      <div class="grammar-desc">${g.description}</div>
+      <div class="grammar-example">${g.example}</div>
+    </div>`).join('');
+  return `
+    <div class="grammar-section">
+      <button class="grammar-toggle" onclick="toggleGrammar(this)">
+        Grammar in this part
+        <svg viewBox="0 0 10 10"><polygon points="1,3 9,3 5,8"/></svg>
+      </button>
+      <div class="grammar-body">${itemsHTML}</div>
+    </div>`;
+}
 
 // ── KEYBOARD ─────────────────────────────────────────────────────────────────
 document.addEventListener('keydown', e => {
@@ -1225,6 +1360,7 @@ function showLoading(show) {
 
 // ── INIT ─────────────────────────────────────────────────────────────────────
 loadSavedState();
+applyFontSize();
 </script>
 </body>
 </html>
