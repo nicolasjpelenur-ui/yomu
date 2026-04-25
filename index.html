@@ -458,6 +458,10 @@
     </div>
   </div>
   <div class="dash-body">
+
+    <!-- Daily Session Card -->
+    <div id="daily-card"></div>
+
     <div class="stats-row">
       <div class="stat-cell"><div class="stat-val" id="dash-stories-read">0</div><div class="stat-lbl">Stories Read</div></div>
       <div class="stat-cell"><div class="stat-val" id="dash-words">0</div><div class="stat-lbl">Words Seen</div></div>
@@ -560,6 +564,13 @@
     <div class="sb-subtitle">Immersive Japanese Reading</div>
   </div>
   <div class="sb-scroll">
+    <!-- Daily Session -->
+    <div class="sb-section-title">Today</div>
+    <button class="sb-dojo-btn" onclick="closeSidebar(); showDashboard();" style="border-color:rgba(196,119,58,0.35);background:rgba(196,119,58,0.05);">
+      <div class="sb-dojo-label" style="display:flex;justify-content:space-between;align-items:center;">今日のセッション <span id="sb-daily-progress" style="font-size:0.6rem;color:var(--muted);font-family:'Noto Sans JP',sans-serif;">0/3</span></div>
+      <div class="sb-dojo-sub">Daily Session</div>
+    </button>
+
     <!-- KanaDojo entry -->
     <div class="sb-section-title">Practice</div>
     <button class="sb-dojo-btn" onclick="openDojo(); closeSidebar();">
@@ -839,6 +850,8 @@ function showDashboard() {
 }
 
 function updateDashboard() {
+  // daily card
+  renderDailyCard();
   // stats
   document.getElementById('dash-stories-read').textContent = state.storiesRead;
   document.getElementById('dash-words').textContent = Object.keys(state.seenWords).length;
@@ -1497,6 +1510,7 @@ function renderPart(result, partNum) {
         state.completedStories[state.curatedStoryId] = 'read';
       }
       saveState();
+      markDailyStoryDone();
       // Show read/mastered buttons after a moment
       setTimeout(() => {
         const row = document.getElementById('story-status-row');
@@ -2229,6 +2243,7 @@ function showResults() {
     dojoStats[key].best = correct;
   }
   saveDojoStats();
+  markDailyKanaDone();
 
   document.getElementById('dojo-session').style.display = 'none';
   document.getElementById('dojo-results').style.display = 'block';
@@ -2268,6 +2283,270 @@ document.addEventListener('keydown', e => {
   }
 });
 
+
+// ── DAILY SESSION ─────────────────────────────────────────────────────────────
+// N5 kanji rotation (80 chars, one per day cycling)
+const N5_KANJI_ROTATION = [
+  {k:'一',on:'いち',kun:'ひと',m:'one'},
+  {k:'二',on:'に',kun:'ふた',m:'two'},
+  {k:'三',on:'さん',kun:'み',m:'three'},
+  {k:'四',on:'し',kun:'よ',m:'four'},
+  {k:'五',on:'ご',kun:'いつ',m:'five'},
+  {k:'六',on:'ろく',kun:'む',m:'six'},
+  {k:'七',on:'しち',kun:'なな',m:'seven'},
+  {k:'八',on:'はち',kun:'や',m:'eight'},
+  {k:'九',on:'く',kun:'ここの',m:'nine'},
+  {k:'十',on:'じゅう',kun:'とお',m:'ten'},
+  {k:'百',on:'ひゃく',kun:'',m:'hundred'},
+  {k:'千',on:'せん',kun:'',m:'thousand'},
+  {k:'万',on:'まん',kun:'',m:'ten thousand'},
+  {k:'円',on:'えん',kun:'まる',m:'yen / circle'},
+  {k:'年',on:'ねん',kun:'とし',m:'year'},
+  {k:'月',on:'がつ',kun:'つき',m:'month / moon'},
+  {k:'日',on:'にち',kun:'ひ',m:'day / sun'},
+  {k:'時',on:'じ',kun:'とき',m:'time / hour'},
+  {k:'分',on:'ふん',kun:'わ',m:'minute / part'},
+  {k:'半',on:'はん',kun:'',m:'half'},
+  {k:'前',on:'ぜん',kun:'まえ',m:'before / front'},
+  {k:'後',on:'ご',kun:'うし',m:'after / behind'},
+  {k:'今',on:'こん',kun:'いま',m:'now'},
+  {k:'何',on:'なん',kun:'なに',m:'what'},
+  {k:'人',on:'じん',kun:'ひと',m:'person'},
+  {k:'子',on:'し',kun:'こ',m:'child'},
+  {k:'女',on:'じょ',kun:'おんな',m:'woman'},
+  {k:'男',on:'だん',kun:'おとこ',m:'man'},
+  {k:'父',on:'ふ',kun:'ちち',m:'father'},
+  {k:'母',on:'ぼ',kun:'はは',m:'mother'},
+  {k:'友',on:'ゆう',kun:'とも',m:'friend'},
+  {k:'先',on:'せん',kun:'さき',m:'ahead / previous'},
+  {k:'生',on:'せい',kun:'い',m:'life / birth'},
+  {k:'学',on:'がく',kun:'まな',m:'study / learn'},
+  {k:'校',on:'こう',kun:'',m:'school'},
+  {k:'名',on:'めい',kun:'な',m:'name'},
+  {k:'休',on:'きゅう',kun:'やす',m:'rest'},
+  {k:'毎',on:'まい',kun:'',m:'every'},
+  {k:'来',on:'らい',kun:'く',m:'come'},
+  {k:'行',on:'こう',kun:'い',m:'go'},
+  {k:'見',on:'けん',kun:'み',m:'see'},
+  {k:'聞',on:'ぶん',kun:'き',m:'listen / hear'},
+  {k:'話',on:'わ',kun:'はな',m:'speak / story'},
+  {k:'読',on:'どく',kun:'よ',m:'read'},
+  {k:'書',on:'しょ',kun:'か',m:'write'},
+  {k:'食',on:'しょく',kun:'た',m:'eat / food'},
+  {k:'飲',on:'いん',kun:'の',m:'drink'},
+  {k:'入',on:'にゅう',kun:'い',m:'enter'},
+  {k:'出',on:'しゅつ',kun:'で',m:'exit / come out'},
+  {k:'上',on:'じょう',kun:'うえ',m:'above / up'},
+  {k:'下',on:'か',kun:'した',m:'below / down'},
+  {k:'大',on:'だい',kun:'おお',m:'large / big'},
+  {k:'小',on:'しょう',kun:'ちい',m:'small'},
+  {k:'高',on:'こう',kun:'たか',m:'tall / expensive'},
+  {k:'長',on:'ちょう',kun:'なが',m:'long / leader'},
+  {k:'白',on:'はく',kun:'しろ',m:'white'},
+  {k:'外',on:'がい',kun:'そと',m:'outside'},
+  {k:'中',on:'ちゅう',kun:'なか',m:'inside / middle'},
+  {k:'国',on:'こく',kun:'くに',m:'country'},
+  {k:'語',on:'ご',kun:'かた',m:'language / word'},
+  {k:'東',on:'とう',kun:'ひがし',m:'east'},
+  {k:'西',on:'せい',kun:'にし',m:'west'},
+  {k:'南',on:'なん',kun:'みなみ',m:'south'},
+  {k:'北',on:'ほく',kun:'きた',m:'north'},
+  {k:'右',on:'う',kun:'みぎ',m:'right'},
+  {k:'左',on:'さ',kun:'ひだり',m:'left'},
+  {k:'山',on:'さん',kun:'やま',m:'mountain'},
+  {k:'川',on:'せん',kun:'かわ',m:'river'},
+  {k:'天',on:'てん',kun:'あめ',m:'sky / heaven'},
+  {k:'気',on:'き',kun:'',m:'spirit / feeling'},
+  {k:'水',on:'すい',kun:'みず',m:'water'},
+  {k:'火',on:'か',kun:'ひ',m:'fire'},
+  {k:'雨',on:'う',kun:'あめ',m:'rain'},
+  {k:'花',on:'か',kun:'はな',m:'flower'},
+  {k:'木',on:'もく',kun:'き',m:'tree / wood'},
+  {k:'本',on:'ほん',kun:'もと',m:'book / origin'},
+  {k:'車',on:'しゃ',kun:'くるま',m:'car / vehicle'},
+  {k:'電',on:'でん',kun:'',m:'electricity'},
+  {k:'間',on:'かん',kun:'あいだ',m:'interval / between'},
+  {k:'金',on:'きん',kun:'かね',m:'gold / money'},
+  {k:'土',on:'ど',kun:'つち',m:'earth / soil'},
+];
+
+let dailyState = {};
+
+function loadDailyState() {
+  try { dailyState = JSON.parse(localStorage.getItem('yomu-daily') || '{}'); } catch(e) { dailyState = {}; }
+  // Reset if new day
+  const today = new Date().toLocaleDateString('en-CA');
+  if (dailyState.date !== today) {
+    dailyState = { date: today, storyDone: false, kanaDone: false, kanjiDone: false, fromDaily: false };
+    saveDailyState();
+  }
+}
+
+function saveDailyState() {
+  localStorage.setItem('yomu-daily', JSON.stringify(dailyState));
+}
+
+function getDailyKanji() {
+  const dayNum = Math.floor(Date.now() / 86400000);
+  return N5_KANJI_ROTATION[dayNum % N5_KANJI_ROTATION.length];
+}
+
+function getDailyKanaType() {
+  const dayNum = Math.floor(Date.now() / 86400000);
+  return dayNum % 2 === 0 ? 'hiragana' : 'katakana';
+}
+
+function getDailyStory() {
+  const level = state.level;
+  const coreStories = CURATED_STORIES.filter(s => s.level === level && !s.mastery && s.parts);
+  const masteryStories = CURATED_STORIES.filter(s => s.level === level && s.mastery && s.parts);
+
+  // 1. First unread core story
+  const unread = coreStories.find(s => !state.completedStories[s.id]);
+  if (unread) return unread;
+
+  // 2. Oldest read-but-not-mastered
+  const readNotMastered = coreStories.find(s => state.completedStories[s.id] === 'read');
+  if (readNotMastered) return readNotMastered;
+
+  // 3. First mastery story not completed
+  const unreadMastery = masteryStories.find(s => !state.completedStories[s.id]);
+  if (unreadMastery) return unreadMastery;
+
+  // 4. Fallback: first story
+  return coreStories[0] || null;
+}
+
+function renderDailyCard() {
+  loadDailyState();
+  const card = document.getElementById('daily-card');
+  if (!card) return;
+
+  const { storyDone, kanaDone, kanjiDone } = dailyState;
+  const allDone = storyDone && kanaDone && kanjiDone;
+  const doneCount = [storyDone, kanaDone, kanjiDone].filter(Boolean).length;
+
+  const story = getDailyStory();
+  const kanaType = getDailyKanaType();
+  const kanji = getDailyKanji();
+
+  const storyTitle = story ? story.title : '—';
+  const storyEn = story ? story.title_en : '';
+  const storyStatus = state.completedStories[story && story.id];
+  const storySub = storyStatus === 'mastered' ? 'Mastered · review' : storyStatus === 'read' ? 'Read · read again' : story ? '3 parts' : '';
+  const kanaLabel = kanaType === 'hiragana' ? 'ひらがな Hiragana' : 'カタカナ Katakana';
+
+  const d = new Date();
+  const dateStr = d.toLocaleDateString('ja-JP', { month: 'long', day: 'numeric', weekday: 'short' });
+
+  // pill colours
+  const pillColor = (done) => done ? (allDone ? '#1D9E75' : 'var(--accent2)') : 'rgba(255,255,255,0.1)';
+
+  // item row builder
+  const row = (done, iconChar, label, sub, onclick) => `
+    <button style="width:100%;display:flex;align-items:center;gap:12px;padding:0.75rem 1rem;background:none;border:none;border-top:1px solid rgba(255,255,255,0.05);cursor:${done?'default':'pointer'};opacity:${done?'0.45':'1'};text-align:left;-webkit-tap-highlight-color:transparent;"
+      ${done ? 'disabled' : `onclick="${onclick}"`}>
+      <div style="width:30px;height:30px;border-radius:50%;border:1px solid ${done?'rgba(29,158,117,0.4)':'rgba(196,119,58,0.3)'};display:flex;align-items:center;justify-content:center;flex-shrink:0;font-family:'Shippori Mincho',serif;font-size:${iconChar.length>1?'0.7':'1'}rem;color:${done?'#1D9E75':'var(--accent2)'};">${done?'✓':iconChar}</div>
+      <div style="flex:1;min-width:0;">
+        <div style="font-family:'Shippori Mincho',serif;font-size:0.92rem;color:var(--paper);line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${label}</div>
+        <div style="font-size:0.6rem;color:var(--muted);margin-top:2px;letter-spacing:0.04em;">${sub}</div>
+      </div>
+      <div style="font-size:0.65rem;color:${done?'#1D9E75':'rgba(122,112,96,0.6)'};flex-shrink:0;">${done?'✓':'›'}</div>
+    </button>`;
+
+  card.innerHTML = `
+    <div style="border:1px solid rgba(196,119,58,0.22);border-radius:2px;background:rgba(196,119,58,0.03);overflow:hidden;">
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:0.8rem 1rem 0.5rem;">
+        <div style="font-size:0.58rem;letter-spacing:0.16em;text-transform:uppercase;color:var(--accent2);">今日のセッション</div>
+        <div style="font-size:0.58rem;color:var(--muted);">${dateStr}</div>
+      </div>
+      <div style="display:flex;gap:5px;padding:0 1rem 0.8rem;">
+        <div style="flex:1;height:2px;border-radius:2px;background:${pillColor(storyDone)};transition:background 0.4s;"></div>
+        <div style="flex:1;height:2px;border-radius:2px;background:${pillColor(kanaDone)};transition:background 0.4s;"></div>
+        <div style="flex:1;height:2px;border-radius:2px;background:${pillColor(kanjiDone)};transition:background 0.4s;"></div>
+      </div>
+      ${row(storyDone, '読', storyTitle, storyEn + (storySub ? ' · ' + storySub : ''), 'startDailyStory()')}
+      ${row(kanaDone, 'あ', kanaLabel, '10 rounds · KanaDojo', 'startDailyKana()')}
+      <button style="width:100%;display:flex;align-items:center;gap:12px;padding:0.75rem 1rem;background:none;border:none;border-top:1px solid rgba(255,255,255,0.05);cursor:${kanjiDone?'default':'pointer'};opacity:${kanjiDone?'0.45':'1'};text-align:left;-webkit-tap-highlight-color:transparent;"
+        ${kanjiDone ? 'disabled' : 'onclick="markKanjiDone()"'}>
+        <div style="font-family:'Shippori Mincho',serif;font-size:1.6rem;color:${kanjiDone?'#1D9E75':'var(--paper)'};width:30px;text-align:center;line-height:1;flex-shrink:0;">${kanjiDone?'✓':kanji.k}</div>
+        <div style="flex:1;">
+          <div style="font-size:0.6rem;color:var(--accent2);letter-spacing:0.04em;">${kanji.on?'on: '+kanji.on:''} ${kanji.kun?'· kun: '+kanji.kun:''}</div>
+          <div style="font-family:'Shippori Mincho',serif;font-size:0.88rem;color:var(--paper);margin-top:1px;">${kanji.m}</div>
+          <div style="font-size:0.58rem;color:var(--muted);margin-top:2px;">漢字 of the day · tap to acknowledge</div>
+        </div>
+        <div style="font-size:0.65rem;color:${kanjiDone?'#1D9E75':'rgba(122,112,96,0.6)'};flex-shrink:0;">${kanjiDone?'✓':'›'}</div>
+      </button>
+      ${allDone ? `<div style="padding:0.65rem 1rem;background:rgba(29,158,117,0.07);border-top:1px solid rgba(29,158,117,0.12);display:flex;align-items:center;justify-content:space-between;">
+        <div style="font-size:0.6rem;letter-spacing:0.14em;text-transform:uppercase;color:#1D9E75;">完了 · Session complete</div>
+        <div style="font-size:0.6rem;color:var(--muted);">${state.streak}日連続</div>
+      </div>` : ''}
+    </div>`;
+
+  const sbProg = document.getElementById('sb-daily-progress');
+  if (sbProg) sbProg.textContent = doneCount + '/3';
+}
+
+function startDailyStory() {
+  const story = getDailyStory();
+  if (!story) return;
+  dailyState.fromDaily = true;
+  saveDailyState();
+  startCuratedStory(story.id);
+}
+
+function startDailyKana() {
+  loadDojoStats();
+  dailyState.fromDaily = true;
+  saveDailyState();
+  const kanaType = getDailyKanaType();
+  dojoSyllabary = kanaType;
+  openDojo();
+  // Set the correct tab active
+  document.querySelectorAll('.dojo-syl-tab').forEach(b => {
+    b.classList.toggle('active', b.textContent.trim() === (kanaType === 'hiragana' ? 'ひらがな' : 'カタカナ'));
+  });
+  renderDojoTable();
+  updateDojoStats();
+  // Auto-start session
+  setTimeout(() => startDojoSession(), 100);
+}
+
+function markKanjiDone() {
+  if (dailyState.kanjiDone) return;
+  dailyState.kanjiDone = true;
+  saveDailyState();
+  checkDailyComplete();
+  renderDailyCard();
+}
+
+function checkDailyComplete() {
+  const { storyDone, kanaDone, kanjiDone } = dailyState;
+  if (storyDone && kanaDone && kanjiDone) {
+    // Handled by renderDailyCard showing complete banner
+    // Streak is already tracked by existing recordRead logic
+  }
+}
+
+// Hook: mark story done when part 3 completes
+function markDailyStoryDone() {
+  if (!dailyState.storyDone) {
+    dailyState.storyDone = true;
+    saveDailyState();
+    checkDailyComplete();
+  }
+}
+
+// Hook: mark kana done when dojo session completes from daily
+function markDailyKanaDone() {
+  if (dailyState.fromDaily && !dailyState.kanaDone) {
+    dailyState.kanaDone = true;
+    dailyState.fromDaily = false;
+    saveDailyState();
+    checkDailyComplete();
+  }
+}
+
 // ── INIT ─────────────────────────────────────────────────────────────────────
 loadSavedState();
 applyFontSize();
@@ -2275,6 +2554,7 @@ applyFontSize();
 (async () => {
   const saved = localStorage.getItem('yomu-key');
   state.apiKey = saved || DEFAULT_KEY;
+  loadDailyState();
   showDashboard();
 })();
 </script>
