@@ -258,10 +258,22 @@
   .stagger>*:nth-child(7){animation-delay:0.65s}
   .stagger>*:nth-child(8){animation-delay:0.75s}
   @keyframes fadeIn{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+  @keyframes partSlideIn{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
+  .part-enter{animation:partSlideIn 0.28s cubic-bezier(0.22,1,0.36,1) forwards;}
 
   /* ── DASHBOARD ─────────────────────────────────────────────────────────── */
   #dashboard-screen{display:block;min-height:100vh;background:var(--ink);}
-  .dash-header{display:flex;align-items:center;justify-content:space-between;padding:1.25rem 1.5rem;border-bottom:1px solid rgba(255,255,255,0.06);position:sticky;top:0;z-index:100;background:var(--ink);}
+  .dash-header{display:flex;align-items:center;padding:1.1rem 1.5rem;gap:12px;border-bottom:1px solid rgba(255,255,255,0.06);position:sticky;top:0;z-index:100;background:var(--ink);}
+  .dash-header-center{flex:1;text-align:center;min-width:0;padding:0 6px;}
+  .dash-daily-phrase{font-family:'Shippori Mincho',serif;font-size:0.78rem;color:var(--muted);letter-spacing:0.04em;line-height:1.35;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .dash-daily-meaning{font-size:0.56rem;color:var(--muted);opacity:0.55;letter-spacing:0.07em;margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  /* hamburger hint on logo */
+  .logo-menu-hint{display:flex;flex-direction:column;gap:3px;align-items:flex-start;}
+  .logo-menu-hint span{display:block;height:1.5px;background:var(--muted);opacity:0.5;border-radius:1px;transition:opacity 0.15s;}
+  .logo-menu-hint span:nth-child(1){width:15px;}
+  .logo-menu-hint span:nth-child(2){width:11px;}
+  .logo-menu-hint span:nth-child(3){width:13px;}
+  .yomu-logo-btn:hover .logo-menu-hint span,.yomu-logo-btn:active .logo-menu-hint span{opacity:0.85;}
   .dash-logo{font-family:'Shippori Mincho',serif;font-size:1.6rem;color:var(--paper);opacity:0.85;letter-spacing:0.05em;}
   .dash-logo span{color:var(--accent);font-size:1rem;font-family:'DM Serif Display',serif;font-style:italic;margin-left:0.5rem;opacity:0.7;}
   .dash-body{max-width:760px;margin:0 auto;padding:1.5rem 1.25rem 6rem;}
@@ -704,8 +716,15 @@
 
 <div id="dashboard-screen">
   <div class="dash-header">
-    <button class="yomu-logo-btn" onclick="openSidebar()" aria-label="Open menu"><span class="logo-kanji">読</span><span class="logo-u">u</span></button>
-    <div style="display:flex;align-items:center;gap:10px;">
+    <button class="yomu-logo-btn" onclick="openSidebar()" aria-label="Open menu" style="flex-direction:row;align-items:center;gap:8px;">
+      <div class="logo-menu-hint" style="margin-top:0;align-items:center;justify-content:center;"><span></span><span></span><span></span></div>
+      <div style="display:flex;align-items:baseline;gap:2px;"><span class="logo-kanji">読</span><span class="logo-u">u</span></div>
+    </button>
+    <div class="dash-header-center" id="dash-header-center">
+      <div class="dash-daily-phrase" id="dash-phrase"></div>
+      <div class="dash-daily-meaning" id="dash-phrase-meaning"></div>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;">
       <span class="streak-badge" id="dash-streak"></span>
       <button class="icon-btn" id="continue-btn" onclick="goToReader()" style="border-color:rgba(196,119,58,0.4);color:var(--accent2);">▶ Resume</button>
     </div>
@@ -752,7 +771,7 @@
 <div id="reader-screen">
   <div class="reader-header">
     <div class="header-left">
-      <button class="icon-btn" onclick="showDashboard()" style="font-size:0.68rem;">← Home</button>
+      <button class="dojo-home-btn" onclick="showDashboard()" aria-label="Home" style="margin-left:0;margin-right:0.25rem;"><svg viewBox="0 0 20 20" width="17" height="17" fill="currentColor"><path d="M10 2.5L2 9.5h2V17h5v-4.5h2V17h5V9.5h2L10 2.5z"/></svg></button>
       <button class="yomu-logo-btn" onclick="openSidebar()" aria-label="Open menu"><span class="logo-kanji">読</span><span class="logo-u">u</span></button>
       <div class="level-badge" id="level-badge">N5</div>
       <div class="streak-badge" id="streak-badge"></div>
@@ -1113,7 +1132,53 @@ function showDashboard() {
   updateDashboard();
 }
 
+// ── DAILY PHRASES ───────────────────────────────────────────────────────────
+const DAILY_PHRASES = [
+  { p:'七転び八起き', r:'ななころびやおき', m:'Fall seven times, rise eight' },
+  { p:'一期一会', r:'いちごいちえ', m:'Treasure every encounter' },
+  { p:'石の上にも三年', r:'いしのうえにもさんねん', m:'Patience brings reward' },
+  { p:'花より団子', r:'はなよりだんご', m:'Substance over beauty' },
+  { p:'急がば回れ', r:'いそがばまわれ', m:'Haste makes waste' },
+  { p:'継続は力なり', r:'けいぞくはちからなり', m:'Persistence is power' },
+  { p:'出る杭は打たれる', r:'でるくいはうたれる', m:'The nail that sticks up gets hammered' },
+  { p:'井の中の蛙', r:'いのなかのかわず', m:'A frog in a well — see the big picture' },
+  { p:'塵も積もれば山となる', r:'ちりもつもればやまとなる', m:'Dust piled up becomes a mountain' },
+  { p:'百聞は一見に如かず', r:'ひゃくぶんはいっけんにしかず', m:'Seeing once beats hearing a hundred times' },
+  { p:'明日は明日の風が吹く', r:'あしたはあしたのかぜがふく', m:'Tomorrow the wind will blow anew' },
+  { p:'失敗は成功のもと', r:'しっぱいはせいこうのもと', m:'Failure is the foundation of success' },
+  { p:'案ずるより産むが易し', r:'あんずるよりうむがやすし', m:'Doing is easier than worrying' },
+  { p:'笑う門には福来る', r:'わらうかどにはふくきたる', m:'Fortune smiles on a happy door' },
+  { p:'虎穴に入らずんば虎子を得ず', r:'こけつにいらずんばこじをえず', m:'Nothing ventured, nothing gained' },
+  { p:'習うより慣れろ', r:'ならうよりなれろ', m:'Practice beats study' },
+  { p:'目は口ほどにものを言う', r:'めはくちほどにものをいう', m:'Eyes speak as loud as words' },
+  { p:'光陰矢の如し', r:'こういんやのごとし', m:'Time flies like an arrow' },
+  { p:'三人寄れば文殊の知恵', r:'さんにんよればもんじゅのちえ', m:'Two heads — or three — are better than one' },
+  { p:'柳に雪折れなし', r:'やなぎにゆきおれなし', m:'Flexibility withstands the heaviest load' },
+  { p:'良薬は口に苦し', r:'りょうやくはくちににがし', m:'Good medicine tastes bitter' },
+  { p:'早起きは三文の徳', r:'はやおきはさんもんのとく', m:'The early bird gets the worm' },
+  { p:'知らぬが仏', r:'しらぬがほとけ', m:'Ignorance is bliss' },
+  { p:'郷に入っては郷に従え', r:'ごうにいってはごうにしたがえ', m:'When in Rome, do as the Romans do' },
+  { p:'猫に小判', r:'ねこにこばん', m:'Pearls before swine' },
+  { p:'七色の虹', r:'ななゆきのにじ', m:'After rain, a rainbow' },
+  { p:'水は方円の器に随う', r:'みずはほうえんのうつわにしたがう', m:'Water takes the shape of its vessel' },
+  { p:'千里の道も一歩から', r:'せんりのみちもいっぽから', m:'A journey of a thousand miles begins with one step' },
+  { p:'一石二鳥', r:'いっせきにちょう', m:'Kill two birds with one stone' },
+  { p:'縁の下の力持ち', r:'えんのしたのちからもち', m:'The unsung hero who supports from below' },
+];
+function getDailyPhrase() {
+  const now = new Date();
+  const start = new Date(now.getFullYear(), 0, 0);
+  const day = Math.floor((now - start) / 86400000) + now.getFullYear() * 366;
+  return DAILY_PHRASES[day % DAILY_PHRASES.length];
+}
+
 function updateDashboard() {
+  // daily phrase
+  const ph = getDailyPhrase();
+  const pel = document.getElementById('dash-phrase');
+  const mel = document.getElementById('dash-phrase-meaning');
+  if (pel) pel.textContent = ph.p;
+  if (mel) mel.textContent = ph.m;
   // resume button visibility
   const contBtn = document.getElementById('continue-btn');
   if (contBtn) contBtn.style.display = state.currentPart > 0 && state.currentPart < 3 ? '' : 'none';
@@ -1450,7 +1515,17 @@ async function continuePart() {
   if (!state.arc || state.currentPart >= 3) { showDashboard(); return; }
   if (state.curatedMode && state.curatedStoryId) {
     const story = CURATED_STORIES.find(s => s.id === state.curatedStoryId);
-    if (story) { await renderCuratedPart(story, state.currentPart + 1); return; }
+    if (story) {
+      // Fade out current content, then load next part
+      const sc = document.getElementById('story-content');
+      if (sc) {
+        sc.style.transition = 'opacity 0.18s ease';
+        sc.style.opacity = '0';
+        await new Promise(r => setTimeout(r, 190));
+      }
+      await renderCuratedPart(story, state.currentPart + 1);
+      return;
+    }
   }
   showDashboard();
 }
@@ -1585,6 +1660,8 @@ function renderPart(result, partNum) {
   // Swap only the content zone -- image/title stay put
   const grammarHTML = buildGrammarHTML(result.grammar);
   const fontClass = FONT_CLASSES[state.fontSize || 2];
+  const sc = document.getElementById('story-content');
+  if (sc) { sc.style.transition = ''; sc.style.opacity = '1'; }
   document.getElementById('story-content').innerHTML = `
     <button class="para-play-btn" id="para-play-btn" onclick="toggleParaAudio()">
       <svg viewBox="0 0 10 10"><polygon id="para-play-icon" points="1,1 9,5 1,9"/></svg>
@@ -1601,7 +1678,17 @@ function renderPart(result, partNum) {
     <div class="swipe-hint">swipe left for next part</div>
     <div class="story-footer">${state.storiesRead} ${state.storiesRead === 1 ? 'story' : 'stories'} read · ${Object.keys(state.seenWords).length} words encountered</div>`;
 
+  // Trigger fade-in animation on new content
+  const scEl = document.getElementById('story-content');
+  if (scEl) {
+    scEl.classList.remove('part-enter');
+    void scEl.offsetWidth; // force reflow
+    scEl.classList.add('part-enter');
+  }
   updateHeader();
+  // Scroll to top of reader body smoothly
+  const rb = document.getElementById('reader-body');
+  if (rb) rb.scrollTo({ top: 0, behavior: 'smooth' });
   window.scrollTo({ top: 0, behavior: 'smooth' });
   if (partNum === 3) {
     // Mark curated story as completed
