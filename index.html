@@ -367,7 +367,7 @@
 
   /* ── KANA DOJO SCREEN ── */
   #dojo-screen{display:none;position:fixed;inset:0;background:var(--ink);z-index:500;overflow-y:auto;-webkit-overflow-scrolling:touch;}
-  .dojo-header{display:flex;align-items:center;gap:1rem;padding:1.1rem 1.25rem;border-bottom:1px solid rgba(255,255,255,0.06);position:sticky;top:0;background:var(--ink);z-index:10;}
+  .dojo-header{display:flex;align-items:center;gap:1rem;padding:1.1rem 1.25rem;border-bottom:1px solid rgba(255,255,255,0.06);position:sticky;top:0;background:var(--ink);z-index:10;position:sticky;}
   .dojo-back{background:none;border:none;color:var(--muted);cursor:pointer;font-size:0.8rem;font-family:'Noto Sans JP',sans-serif;padding:0.4rem 0;-webkit-tap-highlight-color:transparent;}
   .dojo-back:active{color:var(--paper);}
   .dojo-title{font-family:'Shippori Mincho',serif;font-size:1.2rem;color:var(--paper);}
@@ -487,9 +487,10 @@
   body.light .reader-header            { background:#ede0ea; border-color:rgba(30,10,22,0.09); }
   body.light .dash-body,
   body.light .reader-body              { background:#f4eaf1; }
-  body.light #sidebar                  { background:#d9c5d3; }
-  body.light .sb-head                  { border-color:rgba(30,10,22,0.12); background:#d0baca; }
-  body.light .sb-footer                { border-color:rgba(30,10,22,0.1); background:#d0baca; }
+  body.light #sidebar                  { background:#eedce9; }
+  body.light .sb-head                  { border-color:rgba(30,10,22,0.15); background:#c8b0c4; }
+  body.light .sb-footer                { border-color:rgba(30,10,22,0.14); background:#c8b0c4; }
+  body.light .sb-section-title         { color:rgba(30,10,22,0.45); }
   body.light .sb-arc-label             { border-color:rgba(30,10,22,0.07); }
   body.light .sb-story-btn:active      { background:rgba(30,10,22,0.06); }
   body.light .sb-dojo-btn              { border-color:rgba(140,34,72,0.3); background:rgba(140,34,72,0.04); }
@@ -525,6 +526,7 @@
   body.light .story-tab{color:var(--muted);}
   body.light .story-tab.active{color:var(--accent2);border-bottom-color:var(--accent2);}
   body.light .level-tab{border-color:rgba(30,10,22,0.14);color:var(--muted);}
+  body.light .level-tab.active{background:var(--accent);border-color:var(--accent);color:#fff !important;}
   body.light .grammar-section{border-color:rgba(140,34,72,0.2);background:rgba(140,34,72,0.03);}
   body.light .grammar-toggle{color:var(--accent2);}
   body.light .part-actions{border-color:rgba(30,10,22,0.1);}
@@ -544,20 +546,29 @@
   body.light .match-card:hover{background:#ead5e5;border-color:rgba(30,10,22,0.25);}
   body.light .match-card.correct{background:rgba(10,110,75,0.18);border-color:#0d7a52;color:#0d7a52;}
   body.light .furi-btn{border-color:rgba(30,10,22,0.16);color:rgba(30,10,22,0.45);}
-  body.light .session-opt{border-color:rgba(30,10,22,0.16);background:#f0e5ed;}
+  /* Dojo light mode — in light mode --paper=#1e0a16 (dark text), --ink=#ede0ea (light bg) */
+  body.light .dojo-syl-tab{border-color:rgba(30,10,22,0.18);color:var(--muted);background:#f0e5ed;}
+  body.light .dojo-syl-tab.active{background:var(--accent);border-color:var(--accent);color:#fff !important;}
+  body.light .dojo-syl-tab:hover:not(.active){border-color:rgba(30,10,22,0.35);color:var(--paper);}
+  body.light .dojo-begin-btn{background:var(--accent);color:#fff;}
+  body.light .dojo-stat{border-color:rgba(30,10,22,0.14);background:#f0e5ed;}
+  body.light .dojo-stat-lbl{color:var(--muted);}
+  body.light .kana-table td{border-color:rgba(30,10,22,0.09);}
+  body.light .kana-table td.header-cell{color:rgba(110,58,88,0.5);border:none;}
+  body.light .session-progress{background:rgba(30,10,22,0.08);}
+  body.light .session-opt{border-color:rgba(30,10,22,0.18);background:#f0e5ed;}
   body.light .session-opt:active{opacity:0.7;}
   body.light .session-opt.correct{background:rgba(10,110,75,0.2);border-color:#0d7a52;color:#0d7a52;}
+  body.light .session-opt.wrong{background:rgba(139,26,26,0.15);border-color:var(--accent);color:var(--accent);}
   body.light .session-opt.reveal{background:rgba(10,110,75,0.12);border-color:rgba(10,110,75,0.5);color:#0d7a52;}
+  body.light .results-btn{border-color:rgba(30,10,22,0.2);}
+  body.light .results-btn.primary{background:var(--accent2);border-color:var(--accent2);color:#fff;}
   body.light .sv-pill.mastered{background:rgba(10,110,75,0.18);border-color:rgba(10,110,75,0.45);color:#0d7a52;}
   body.light .stats-sum-cell .stats-sum-val[style*="1D9E75"]{color:#0d7a52 !important;}
-  body.light .dojo-syl-tab{border-color:rgba(30,10,22,0.14);color:var(--muted);}
-  body.light .kana-table td{border-color:rgba(30,10,22,0.09);}
-  body.light .kana-table .kana-table td.header-cell{color:rgba(122,80,96,0.45);}
-  body.light .results-btn{border-color:rgba(30,10,22,0.16);}
 
   /* ── STATS SCREEN ─────────────────────────────────────────────────────── */
   #stats-screen{display:none;position:fixed;inset:0;background:var(--ink);z-index:500;overflow-y:auto;-webkit-overflow-scrolling:touch;padding-bottom:2rem;}
-  .stats-header{display:flex;align-items:center;gap:1rem;padding:1.1rem 1.25rem;border-bottom:1px solid rgba(255,255,255,0.06);position:sticky;top:0;background:var(--ink);z-index:10;}
+  .stats-header{display:flex;align-items:center;gap:1rem;padding:1.1rem 1.25rem;border-bottom:1px solid rgba(255,255,255,0.06);position:sticky;top:0;background:var(--ink);z-index:10;overflow:visible;}
   .stats-level-tabs{display:flex;gap:6px;padding:1rem 1.25rem 0.5rem;overflow-x:auto;}
   .stats-lvl-tab{padding:0.45rem 1rem;border:1px solid rgba(255,255,255,0.15);background:none;color:var(--muted);cursor:pointer;font-family:'Noto Sans JP',sans-serif;font-size:0.78rem;border-radius:2px;transition:all 0.15s;white-space:nowrap;-webkit-tap-highlight-color:transparent;}
   .stats-lvl-tab.active{background:var(--accent);border-color:var(--accent);color:#fff;}
@@ -596,20 +607,32 @@
   .stats-popover-status.pending{background:rgba(200,60,60,0.2);color:#e07070;}
   .stats-popover-status.unseen{background:rgba(255,255,255,0.06);color:var(--muted);}
   .stats-popover-close{position:absolute;top:1rem;right:1rem;background:none;border:none;color:var(--muted);font-size:1rem;cursor:pointer;padding:0.25rem;}
+  .stats-popover-speak{display:flex;align-items:center;gap:7px;padding:0.55rem 1rem;border:1px solid rgba(255,255,255,0.15);background:none;border-radius:2px;color:var(--paper);cursor:pointer;font-family:'Noto Sans JP',sans-serif;font-size:0.8rem;margin-top:0.5rem;-webkit-tap-highlight-color:transparent;transition:background 0.15s;}
+  .stats-popover-speak:active{background:rgba(255,255,255,0.07);}
+  body.light .stats-popover-speak{border-color:rgba(30,10,22,0.2);}
+  .dojo-home-btn{background:none;border:none;cursor:pointer;padding:0.4rem;margin-left:auto;color:var(--muted);display:flex;align-items:center;-webkit-tap-highlight-color:transparent;transition:color 0.15s;}
+  .dojo-home-btn:hover,.dojo-home-btn:active{color:var(--paper);}
   .stats-popover-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:599;}
-  body.light #stats-screen{background:var(--ink);}
-  body.light .stats-header{border-color:rgba(42,15,30,0.08);background:var(--ink);}
-  body.light .stats-summary-row{background:rgba(30,10,22,0.08);}
-  body.light .stats-sum-cell{background:var(--ink);}
-  body.light .stats-lvl-tab{border-color:rgba(30,10,22,0.2);color:var(--muted);}
-  body.light .stats-filter-btn{border-color:rgba(30,10,22,0.15);}
-  body.light .stats-coverage-toggle{background:rgba(30,10,22,0.04);border-color:rgba(30,10,22,0.1);}
-  body.light .sv-pill.unseen{background:rgba(30,10,22,0.05);border-color:rgba(30,10,22,0.12);}
-  body.light .stats-word-popover{background:var(--ink);border-color:rgba(30,10,22,0.12);}
+  body.light #stats-screen{background:#ede0ea;}
+  body.light .stats-header{border-color:rgba(30,10,22,0.1);background:#d0baca;}
+  body.light .stats-summary-row{background:rgba(30,10,22,0.1);border-radius:2px;}
+  body.light .stats-sum-cell{background:#f4eaf1;}
+  /* Stats screen light mode — var(--paper) = dark text, auto-inherited */
+  body.light .stats-sum-cell{background:#f4eaf1;}
+  body.light .stats-sum-lbl{color:var(--muted);}
+  body.light .stats-lvl-tab{border-color:rgba(30,10,22,0.2);color:var(--muted);background:#f0e5ed;}
+  body.light .stats-lvl-tab.active{background:var(--accent);border-color:var(--accent);color:#fff;}
+  body.light .stats-filter-btn{border-color:rgba(30,10,22,0.18);color:var(--muted);background:#f0e5ed;}
+  body.light .stats-filter-btn.active{border-color:var(--accent);color:var(--accent);background:rgba(139,26,26,0.06);}
+  body.light .stats-search-input{background:#f4eaf1;border-color:rgba(30,10,22,0.18);color:var(--paper);}
+  body.light .stats-search-input::placeholder{color:var(--muted);}
+  body.light .stats-search-input:focus{border-color:rgba(30,10,22,0.4);}
+  body.light .stats-coverage-toggle{background:#f0e5ed;border-color:rgba(30,10,22,0.14);}
+  body.light .sv-pill.unseen{background:rgba(30,10,22,0.06);border-color:rgba(30,10,22,0.14);color:var(--muted);}
+  body.light .sv-pill.pending{background:rgba(200,60,60,0.12);border-color:rgba(200,60,60,0.3);color:#c04040;}
+  body.light .stats-word-popover{background:#f4eaf1;border-color:rgba(30,10,22,0.14);}
 
-  body.light #dojo-screen{background:var(--ink);}
-  body.light .dojo-header{border-color:rgba(42,15,30,0.08);background:var(--ink);}
-  body.light .dojo-stat{border-color:rgba(30,10,22,0.12);background:#f0e5ed;}
+  body.light .dojo-header{border-color:rgba(30,10,22,0.1);background:#d0baca;}
   body.light .sc-check{background:var(--accent)!important;}
   body.light .daily-card-inner{border-color:rgba(140,34,72,0.25)!important;background:#f0e5ed!important;}
   body.light #reading-progress{background:var(--accent2);}
@@ -698,7 +721,7 @@
       <div class="stat-cell"><div class="stat-val" id="dash-streak-val">0</div><div class="stat-lbl">Day Streak</div></div>
       <div class="stat-cell"><div class="stat-val" id="dash-today">0</div><div class="stat-lbl">Today</div></div>
     </div>
-    <div class="dash-section-title">Level</div>
+    <div class="dash-section-title" id="dash-level-section">Level</div>
     <div class="level-tabs">
       <button class="level-tab active" data-level="N5" onclick="setDashLevel('N5')">N5</button>
       <button class="level-tab" data-level="N4" onclick="setDashLevel('N4')">N4</button>
@@ -780,7 +803,7 @@
   <div class="sb-scroll">
     <!-- Daily Session -->
     <div class="sb-section-title">Today</div>
-    <button class="sb-dojo-btn" onclick="closeSidebar(); showDashboard();" style="border-color:rgba(196,119,58,0.35);background:rgba(196,119,58,0.05);">
+    <button class="sb-dojo-btn" onclick="closeSidebar(); setTimeout(function(){showDashboard();window.scrollTo({top:0,behavior:'smooth'});},320);" style="border-color:rgba(196,119,58,0.35);background:rgba(196,119,58,0.05);">
       <div class="sb-dojo-label" style="display:flex;justify-content:space-between;align-items:center;">今日のセッション <span id="sb-daily-progress" style="font-size:0.6rem;color:var(--muted);font-family:'Noto Sans JP',sans-serif;">0/3</span></div>
       <div class="sb-dojo-sub">Daily Session</div>
     </button>
@@ -794,7 +817,14 @@
 
     <!-- Stories -->
     <div class="sb-section-title">Stories</div>
-    <div style="padding:0.25rem 1.25rem 0.5rem;display:flex;flex-direction:column;gap:6px;">
+    <button class="sb-dojo-btn" onclick="toggleSidebarStories()" id="sb-stories-toggle" style="display:flex;align-items:center;justify-content:space-between;">
+      <div>
+        <div class="sb-dojo-label">物語</div>
+        <div class="sb-dojo-sub">Browse by level</div>
+      </div>
+      <svg id="sb-stories-chevron" viewBox="0 0 10 6" style="width:12px;height:12px;flex-shrink:0;transition:transform 0.2s;color:var(--muted);"><polyline points="1,1 5,5 9,1" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+    </button>
+    <div id="sb-stories-list" style="display:none;padding:0 1.25rem 0.25rem;flex-direction:column;gap:6px;">
       <button class="sb-level-shortcut" onclick="goToLevel('N5')">N5 <span>Beginner</span></button>
       <button class="sb-level-shortcut sb-level-disabled" title="Coming soon">N4 <span>Elementary</span></button>
       <button class="sb-level-shortcut sb-level-disabled" title="Coming soon">N3 <span>Intermediate</span></button>
@@ -827,9 +857,11 @@
 <!-- ── KANA DOJO SCREEN ─────────────────────────────────────────────────── -->
 <div id="dojo-screen">
   <div class="dojo-header">
-    <button class="dojo-back" onclick="closeDojo()">← 戻る</button>
-    <div class="dojo-title">Dojo</div>
-    <button class="yomu-logo-btn" onclick="openSidebar()" aria-label="Open menu" style="margin-left:auto;"><span class="logo-kanji" style="font-size:1.1rem;color:var(--paper);opacity:0.6;">読</span><span class="logo-u" style="font-size:0.7rem;">u</span></button>
+    <button class="yomu-logo-btn" onclick="openSidebar()" aria-label="Open menu"><span class="logo-kanji" style="font-size:1.1rem;">読</span><span class="logo-u" style="font-size:0.7rem;">u</span></button>
+    <div class="dojo-title" style="position:absolute;left:0;right:0;text-align:center;pointer-events:none;">Dojo</div>
+    <button class="dojo-home-btn" onclick="showDashboard()" aria-label="Home" title="Home">
+      <svg viewBox="0 0 20 20" width="17" height="17" fill="currentColor"><path d="M10 2.5L2 9.5h2V17h5v-4.5h2V17h5V9.5h2L10 2.5z"/></svg>
+    </button>
   </div>
 
   <!-- Selection screen -->
@@ -886,9 +918,11 @@
 <!-- ── STATS / PROGRESS SCREEN ────────────────────────────────────────────── -->
 <div id="stats-screen">
   <div class="stats-header">
-    <button class="dojo-back" onclick="closeStats()">← 戻る</button>
-    <div class="dojo-title">進捗</div>
-    <button class="yomu-logo-btn" onclick="openSidebar();" aria-label="Open menu" style="margin-left:auto;"><span class="logo-kanji" style="font-size:1.1rem;color:var(--paper);opacity:0.6;">読</span><span class="logo-u" style="font-size:0.7rem;">u</span></button>
+    <button class="yomu-logo-btn" onclick="openSidebar()" aria-label="Open menu"><span class="logo-kanji" style="font-size:1.1rem;">読</span><span class="logo-u" style="font-size:0.7rem;">u</span></button>
+    <div class="dojo-title" style="position:absolute;left:0;right:0;text-align:center;pointer-events:none;">進捗</div>
+    <button class="dojo-home-btn" onclick="showDashboard()" aria-label="Home" title="Home">
+      <svg viewBox="0 0 20 20" width="17" height="17" fill="currentColor"><path d="M10 2.5L2 9.5h2V17h5v-4.5h2V17h5V9.5h2L10 2.5z"/></svg>
+    </button>
   </div>
 
   <!-- Level tabs -->
@@ -934,9 +968,13 @@
     <div class="stats-popover-reading" id="spop-reading"></div>
     <div class="stats-popover-meaning" id="spop-meaning"></div>
     <div class="stats-popover-status" id="spop-status"></div>
+    <button class="stats-popover-speak" id="spop-speak-btn" onclick="speakVocabWord()">
+      <svg viewBox="0 0 20 20" width="14" height="14" fill="currentColor"><path d="M3 7v6h4l5 5V2L7 7H3zm13.5 3a4.5 4.5 0 00-2.5-4v8a4.5 4.5 0 002.5-4z"/></svg>
+      聞く — Listen
+    </button>
     <button class="stats-popover-close" onclick="closeWordPopover()">✕</button>
   </div>
-  <div id="stats-popover-overlay" class="stats-popover-overlay" onclick="closeWordPopover()"></div>
+  <div id="stats-popover-overlay" class="stats-popover-overlay" onclick="closeWordPopover()" style="display:none;"></div>
 </div>
 
 <script>
@@ -1070,6 +1108,8 @@ document.querySelectorAll('.level-btn').forEach(btn => {
 function showDashboard() {
   document.getElementById('dashboard-screen').style.display = 'block';
   document.getElementById('reader-screen').style.display = 'none';
+  document.getElementById('dojo-screen').style.display = 'none';
+  document.getElementById('stats-screen').style.display = 'none';
   updateDashboard();
 }
 
@@ -1211,7 +1251,7 @@ function renderCuratedGrid() {
     const total = stories.length;
     const allDone = readCount === total;
     const label = GENRE_LABELS[genre] || { en: genre, icon: '◆' };
-    const isCollapsed = collapsedThemes[idx] !== undefined ? collapsedThemes[idx] : false;
+    const isCollapsed = collapsedThemes[idx] !== undefined ? collapsedThemes[idx] : true;
     const themeId = `theme-group-${idx}`;
     const progressPct = total > 0 ? (readCount / total * 100).toFixed(0) : 0;
 
@@ -2105,11 +2145,28 @@ function closeSidebar() {
 
 function goToLevel(lvl) {
   closeSidebar();
-  // Switch dashboard to that level and scroll to top
   state.level = lvl;
   saveState();
-  showDashboard();
-  setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 300);
+  // Small delay to let sidebar close before dashboard interaction
+  setTimeout(function() {
+    showDashboard();
+    // Scroll to level section so user sees tabs + stories
+    setTimeout(function() {
+      const el = document.getElementById('dash-level-section');
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 100);
+  }, 320);
+}
+
+function toggleSidebarStories() {
+  const list = document.getElementById('sb-stories-list');
+  const chev = document.getElementById('sb-stories-chevron');
+  if (!list) return;
+  const isOpen = list.style.display === 'flex';
+  list.style.display = isOpen ? 'none' : 'flex';
+  list.style.flexDirection = 'column';
+  list.style.gap = '6px';
+  if (chev) chev.style.transform = isOpen ? '' : 'rotate(180deg)';
 }
 
 // Swipe left to close sidebar
@@ -2217,6 +2274,7 @@ function renderVocabGrid() {
     if (!q) return true;
     return v.w.includes(statsSearch.trim()) ||
            v.r.toLowerCase().includes(q) ||
+           toRomaji(v.r).toLowerCase().includes(q) ||
            v.m.toLowerCase().includes(q);
   });
 
@@ -2228,6 +2286,35 @@ function renderVocabGrid() {
     const m = getMastery(v.w);
     return `<span class="sv-pill ${m}" data-vocab-idx="${N5_VOCAB.indexOf(v)}" onclick="openWordPopoverByIdx(this.dataset.vocabIdx)">${v.w}</span>`;
   }).join('');
+}
+
+// Hiragana/katakana → romaji for search
+function toRomaji(str) {
+  const combos = {'きゃ':'kya','きゅ':'kyu','きょ':'kyo','しゃ':'sha','しゅ':'shu','しょ':'sho','ちゃ':'cha','ちゅ':'chu','ちょ':'cho','にゃ':'nya','にゅ':'nyu','にょ':'nyo','ひゃ':'hya','ひゅ':'hyu','ひょ':'hyo','みゃ':'mya','みゅ':'myu','みょ':'myo','りゃ':'rya','りゅ':'ryu','りょ':'ryo','ぎゃ':'gya','ぎゅ':'gyu','ぎょ':'gyo','じゃ':'ja','じゅ':'ju','じょ':'jo','びゃ':'bya','びゅ':'byu','びょ':'byo','ぴゃ':'pya','ぴゅ':'pyu','ぴょ':'pyo'};
+  const single = {'あ':'a','い':'i','う':'u','え':'e','お':'o','か':'ka','き':'ki','く':'ku','け':'ke','こ':'ko','さ':'sa','し':'shi','す':'su','せ':'se','そ':'so','た':'ta','ち':'chi','つ':'tsu','て':'te','と':'to','な':'na','に':'ni','ぬ':'nu','ね':'ne','の':'no','は':'ha','ひ':'hi','ふ':'fu','へ':'he','ほ':'ho','ま':'ma','み':'mi','む':'mu','め':'me','も':'mo','や':'ya','ゆ':'yu','よ':'yo','ら':'ra','り':'ri','る':'ru','れ':'re','ろ':'ro','わ':'wa','を':'wo','ん':'n','が':'ga','ぎ':'gi','ぐ':'gu','げ':'ge','ご':'go','ざ':'za','じ':'ji','ず':'zu','ぜ':'ze','ぞ':'zo','だ':'da','ぢ':'ji','づ':'zu','で':'de','ど':'do','ば':'ba','び':'bi','ぶ':'bu','べ':'be','ぼ':'bo','ぱ':'pa','ぴ':'pi','ぷ':'pu','ぺ':'pe','ぽ':'po','ー':'-'};
+  // Normalise katakana → hiragana
+  function norm(ch) {
+    const cp = ch.charCodeAt(0);
+    return (cp >= 0x30A1 && cp <= 0x30F6) ? String.fromCharCode(cp - 0x60) : ch;
+  }
+  let out = '', i = 0;
+  while (i < str.length) {
+    const ch = norm(str[i]);
+    // Small tsu — double next consonant
+    if (ch === 'っ') {
+      const nxt = str[i+1] ? norm(str[i+1]) : '';
+      const nxt2 = str[i+2] ? norm(str[i+2]) : '';
+      const nxtRom = combos[nxt+nxt2] || combos[nxt] || single[nxt] || '';
+      out += nxtRom[0] || ''; // double first consonant
+      i++; continue;
+    }
+    const nxt = str[i+1] ? norm(str[i+1]) : '';
+    const pair = ch + nxt;
+    if (combos[pair]) { out += combos[pair]; i += 2; continue; }
+    if (single[ch] !== undefined) { out += single[ch]; i++; continue; }
+    out += ch; i++;
+  }
+  return out;
 }
 
 function onStatsSearch(val) {
@@ -2261,7 +2348,10 @@ function openWordPopoverByIdx(idx) {
   openWordPopover(v);
 }
 
+let _currentVocabWord = null;
+
 function openWordPopover(v) {
+  _currentVocabWord = v;
   const m = getMastery(v.w);
   const statusText = { mastered: '✓ Mastered', pending: '● Pending', unseen: '◌ Not encountered' }[m];
   document.getElementById('spop-word').textContent = v.w;
@@ -2276,12 +2366,29 @@ function openWordPopover(v) {
   if (state.encounteredWords[v.w] !== undefined) {
     const sIdx = state.encounteredWords[v.w];
     const story = CURATED_STORIES[sIdx];
-    if (story) firstSeen = '\nFirst seen in: ' + story.title_en;
+    if (story) firstSeen = '  ·  First seen in: ' + story.title_en;
   }
   if (firstSeen) document.getElementById('spop-reading').textContent = v.r + firstSeen;
 
   document.getElementById('stats-word-popover').style.display = 'block';
   document.getElementById('stats-popover-overlay').style.display = 'block';
+}
+
+function speakVocabWord() {
+  if (!_currentVocabWord || !window.speechSynthesis) return;
+  // Use kana reading for accurate pronunciation; fall back to written form
+  const text = _currentVocabWord.r || _currentVocabWord.w;
+  if (!text) return;
+  if (window.speechSynthesis.speaking) window.speechSynthesis.cancel();
+  const utter = new SpeechSynthesisUtterance(text);
+  utter.lang = 'ja-JP';
+  utter.rate = 0.8;
+  const voice = getJpVoice();
+  if (voice) utter.voice = voice;
+  // Visual feedback on button
+  const btn = document.getElementById('spop-speak-btn');
+  if (btn) { btn.style.opacity = '0.5'; utter.onend = () => { btn.style.opacity = ''; }; }
+  window.speechSynthesis.speak(utter);
 }
 
 function closeWordPopover() {
