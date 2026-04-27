@@ -252,6 +252,38 @@
   /* loading */
   #loading-overlay{display:none;position:fixed;inset:0;background:var(--ink);z-index:500;align-items:center;justify-content:center;flex-direction:column;gap:1.5rem;}
   #loading-overlay.active{display:flex;}
+  /* ── ONBOARDING ─────────────────────────────────────────────────────────── */
+  #onboarding-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.72);z-index:998;align-items:center;justify-content:center;padding:1.5rem;}
+  #onboarding-overlay.open{display:flex;}
+  .onb-card{background:var(--ink);border:1px solid rgba(255,255,255,0.09);border-radius:18px;width:100%;max-width:400px;padding:2rem 1.75rem 1.5rem;display:flex;flex-direction:column;align-items:center;position:relative;gap:0;}
+  .onb-skip{position:absolute;top:1rem;right:1.25rem;background:none;border:none;color:var(--muted);font-size:0.75rem;cursor:pointer;letter-spacing:0.08em;padding:0.25rem 0;-webkit-tap-highlight-color:transparent;}
+  #onb-slide-content{width:100%;display:flex;flex-direction:column;align-items:center;text-align:center;}
+  .onb-glyph{font-family:'Shippori Mincho',serif;font-size:4.5rem;line-height:1;color:var(--muted);opacity:0.55;margin-bottom:1.25rem;width:100%;text-align:center;}
+  .onb-heading{font-family:'Shippori Mincho',serif;font-size:1.2rem;color:var(--paper);text-align:center;margin-bottom:0.75rem;letter-spacing:0.02em;width:100%;}
+  .onb-body{font-family:'Noto Sans JP',sans-serif;font-size:0.86rem;color:var(--muted);text-align:center;line-height:1.7;margin-bottom:1.75rem;width:100%;}
+  .onb-body strong{color:var(--paper);font-weight:600;}
+  .onb-slide{width:100%;display:flex;flex-direction:column;align-items:center;transition:opacity 0.22s ease, transform 0.22s ease;}
+  .onb-slide.hidden{opacity:0;pointer-events:none;position:absolute;}
+  .onb-dots{display:flex;gap:6px;margin-bottom:1.25rem;}
+  .onb-dot{width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,0.18);transition:background 0.2s,width 0.2s;cursor:pointer;}
+  .onb-dot.active{background:var(--accent2);width:18px;border-radius:3px;}
+  .onb-nav{display:flex;align-items:center;gap:10px;width:100%;}
+  .onb-arrow{flex:0 0 40px;height:40px;border:1px solid rgba(255,255,255,0.12);background:none;color:var(--muted);border-radius:50%;cursor:pointer;font-size:1rem;display:flex;align-items:center;justify-content:center;transition:all 0.15s;-webkit-tap-highlight-color:transparent;}
+  .onb-arrow:hover{border-color:rgba(255,255,255,0.3);color:var(--paper);}
+  .onb-arrow:disabled{opacity:0.2;cursor:default;}
+  .onb-cta{flex:1;padding:0.75rem;background:var(--accent2);border:none;color:#fff;font-family:'Shippori Mincho',serif;font-size:1rem;border-radius:2px;cursor:pointer;letter-spacing:0.06em;transition:opacity 0.15s;-webkit-tap-highlight-color:transparent;}
+  .onb-cta:active{opacity:0.85;}
+  .onb-spacer{flex:1;}
+  body.light .onb-card{background:#f0e5ed;border-color:rgba(30,10,22,0.1);}
+  body.light .onb-dot{background:rgba(30,10,22,0.18);}
+  body.light .onb-arrow{border-color:rgba(30,10,22,0.18);}
+  body.light .onb-arrow:hover{border-color:rgba(30,10,22,0.4);}
+  /* help button in sidebar */
+  .sb-head{position:relative;}
+  .sb-help-btn{position:absolute;top:50%;right:1.25rem;transform:translateY(-50%);background:none;border:1px solid rgba(255,255,255,0.13);border-radius:2px;color:var(--muted);font-family:'Shippori Mincho',serif;font-size:0.82rem;line-height:1;cursor:pointer;width:26px;height:26px;display:flex;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent;transition:all 0.15s;}
+  .sb-help-btn:hover{border-color:rgba(255,255,255,0.3);color:var(--paper);}
+  body.light .sb-help-btn{border-color:rgba(30,10,22,0.18);}
+  body.light .sb-help-btn:hover{border-color:rgba(30,10,22,0.35);color:var(--paper);}
   .loading-char{font-family:'Shippori Mincho',serif;font-size:5rem;color:var(--paper);opacity:0.15;animation:float 3s ease-in-out infinite;}
   @keyframes float{0%,100%{transform:translateY(0);opacity:0.1}50%{transform:translateY(-12px);opacity:0.25}}
   .loading-text{font-size:0.75rem;letter-spacing:0.2em;color:var(--muted);text-transform:uppercase;}
@@ -737,6 +769,16 @@
   </div>
 </div>
 
+<!-- ── ONBOARDING OVERLAY ──────────────────────────────────────────────────── -->
+<div id="onboarding-overlay">
+  <div class="onb-card">
+    <button class="onb-skip" id="onb-skip" onclick="hideOnboarding()">Skip</button>
+    <div id="onb-slide-content"></div>
+    <div class="onb-dots" id="onb-dots"></div>
+    <div class="onb-nav" id="onb-nav"></div>
+  </div>
+</div>
+
 <div id="loading-overlay">
   <div class="loading-char" id="loading-char">語</div>
   <div class="loading-text" id="loading-text">Loading...</div>
@@ -854,6 +896,7 @@
   <div class="sb-head">
     <div class="sb-brand">読<span class="sb-u">u</span></div>
     <div class="sb-subtitle">Immersive Japanese Reading</div>
+    <button class="sb-help-btn" onclick="closeSidebar(); showOnboarding();" aria-label="How it works">?</button>
   </div>
   <div class="sb-scroll">
     <!-- Daily Session -->
@@ -1072,6 +1115,7 @@ let state = {
   curatedStoryId: null,  // which curated story
   encounteredWords: {},  // { surface: storyOrder } last story index where word was seen in a read part
   tappedWords: {},       // { surface: storyOrder } last story index where word was tapped
+  onboarded: false,      // true after first-launch tutorial dismissed
 };
 
 let loadingInterval, loadingMsgInterval;
@@ -1095,6 +1139,7 @@ function saveState() {
     lastReadDates: state.lastReadDates || {},
     encounteredWords: state.encounteredWords || {},
     tappedWords: state.tappedWords || {},
+    onboarded: state.onboarded || false,
   }));
 }
 
@@ -1114,6 +1159,7 @@ function loadSavedState() {
       state.tappedWords = {};
       Object.keys(state.seenWords || {}).forEach(w => { state.tappedWords[w] = 0; });
     }
+    if (state.onboarded === undefined) state.onboarded = false;
     // Migrate old boolean true → 'read'
     Object.keys(state.completedStories).forEach(k => {
       if (state.completedStories[k] === true) state.completedStories[k] = 'read';
@@ -3969,8 +4015,75 @@ function updateModeLabel() {
   if (lbl) lbl.textContent = document.body.classList.contains('light') ? 'Dark mode' : 'Light mode';
 }
 
+// ── ONBOARDING ────────────────────────────────────────────────────────────────
+const ONB_SLIDES = [
+  { glyph:'読', heading:'Welcome to Yomu', body:'Immersive Japanese reading. Stories, vocabulary, and daily practice in one place.' },
+  { glyph:'本', heading:'Read &amp; tap', body:'Work through curated stories at your level. <strong>Tap any word</strong> to see its reading and meaning instantly.' },
+  { glyph:'語', heading:'Words find you', body:'Every word you tap moves from <strong>Unseen to Pending</strong>. Read it again without tapping or get it right in the Dojo to push it toward <strong>Mastered</strong>.' },
+  { glyph:'道', heading:'Train in the Dojo', body:'Reinforce kana and vocabulary with short focused sessions. Each session <strong>targets what you struggle with most</strong>.' },
+  { glyph:'日', heading:'Build the habit', body:'Complete your <strong>daily session</strong> every day. A story, kana practice, and a kanji of the day. Small reps, lasting memory.' },
+];
+let _onbIdx = 0;
+
+function showOnboarding() {
+  _onbIdx = 0;
+  document.getElementById('onboarding-overlay').classList.add('open');
+  _onbRender();
+}
+
+function hideOnboarding() {
+  document.getElementById('onboarding-overlay').classList.remove('open');
+  state.onboarded = true;
+  saveState();
+}
+
+function _onbGoTo(n) {
+  _onbIdx = Math.max(0, Math.min(ONB_SLIDES.length - 1, n));
+  _onbRender();
+}
+
+function _onbRender() {
+  const slide = ONB_SLIDES[_onbIdx];
+  const isLast = _onbIdx === ONB_SLIDES.length - 1;
+  const isFirst = _onbIdx === 0;
+
+  // Slide content
+  document.getElementById('onb-slide-content').innerHTML =
+    `<div class="onb-glyph">${slide.glyph}</div>
+     <div class="onb-heading">${slide.heading}</div>
+     <div class="onb-body">${slide.body}</div>`;
+
+  // Skip visibility — hide on last slide
+  document.getElementById('onb-skip').style.visibility = isLast ? 'hidden' : '';
+
+  // Dots
+  document.getElementById('onb-dots').innerHTML = ONB_SLIDES.map((_, i) =>
+    `<div class="onb-dot${i === _onbIdx ? ' active' : ''}" onclick="_onbGoTo(${i})"></div>`
+  ).join('');
+
+  // Nav
+  document.getElementById('onb-nav').innerHTML = isLast
+    ? `<button class="onb-cta" onclick="hideOnboarding()">Let's begin →</button>`
+    : `<button class="onb-arrow" onclick="_onbGoTo(${_onbIdx - 1})"${isFirst ? ' disabled' : ''}>‹</button>
+       <div class="onb-spacer"></div>
+       <button class="onb-arrow" onclick="_onbGoTo(${_onbIdx + 1})">›</button>`;
+}
+
+// Swipe support for onboarding
+let _onbSwipeX = 0;
+document.getElementById('onboarding-overlay').addEventListener('touchstart', e => {
+  _onbSwipeX = e.touches[0].clientX;
+}, { passive: true });
+document.getElementById('onboarding-overlay').addEventListener('touchend', e => {
+  const dx = e.changedTouches[0].clientX - _onbSwipeX;
+  if (Math.abs(dx) < 50) return;
+  if (dx < 0) _onbGoTo(_onbIdx + 1);
+  else _onbGoTo(_onbIdx - 1);
+}, { passive: true });
+
 // ── INIT ─────────────────────────────────────────────────────────────────────
 loadSavedState();
+if (!state.onboarded) showOnboarding();
 applyFontSize();
 applyTheme();
 // Auto-launch dashboard
