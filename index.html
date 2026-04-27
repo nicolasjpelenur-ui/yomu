@@ -2011,11 +2011,43 @@ function handleVocabPillClick(surface, reading, meaning, level) {
 // ── AUDIO ────────────────────────────────────────────────────────────────────
 let paraPlaying = false;
 
+// Voice cache — populated eagerly and on voiceschanged (Chrome loads async)
+let _cachedVoices = [];
+function _loadVoices() {
+  const v = window.speechSynthesis?.getVoices() || [];
+  if (v.length) _cachedVoices = v;
+}
+_loadVoices();
+if (window.speechSynthesis) {
+  window.speechSynthesis.addEventListener('voiceschanged', _loadVoices);
+  setTimeout(_loadVoices, 800); // Firefox fallback
+}
+
 function getJpVoice() {
-  const voices = window.speechSynthesis.getVoices();
-  return voices.find(v => v.lang === 'ja-JP' && v.localService)
-    || voices.find(v => v.lang === 'ja-JP')
-    || voices.find(v => v.lang.startsWith('ja'));
+  const voices = _cachedVoices.length
+    ? _cachedVoices
+    : (window.speechSynthesis?.getVoices() || []);
+  const jp = voices.filter(v => v.lang === 'ja-JP' || v.lang.startsWith('ja'));
+  if (!jp.length) return undefined;
+  // Tier 1 — known high-quality named voices by platform
+  const preferred = [
+    'Kyoko (Enhanced)', 'Otoya (Enhanced)', 'Hattori (Enhanced)', 'O-ren (Enhanced)',
+    'Kyoko', 'Otoya',
+    'Microsoft Haruka', 'Microsoft Keita',
+    'Google 日本語', 'Google Japanese',
+  ];
+  for (const name of preferred) {
+    const m = jp.find(v => v.name === name);
+    if (m) return m;
+  }
+  // Tier 2 — any enhanced/premium variant
+  const enhanced = jp.find(v => /enhanced|premium/i.test(v.name));
+  if (enhanced) return enhanced;
+  // Tier 3 — local service (offline) voice
+  const local = jp.find(v => v.localService);
+  if (local) return local;
+  // Tier 4 — anything Japanese
+  return jp[0];
 }
 
 function setParaPlayState(playing) {
@@ -2047,7 +2079,6 @@ function toggleParaAudio() {
   const utter = new SpeechSynthesisUtterance(text);
   utter.lang = 'ja-JP';
   utter.rate = 0.84;
-  utter.pitch = 1.0;
   const voice = getJpVoice();
   if (voice) utter.voice = voice;
   utter.onstart = () => setParaPlayState(true);
@@ -2504,7 +2535,6 @@ function openWordPopover(v) {
 
 function speakVocabWord() {
   if (!_currentVocabWord || !window.speechSynthesis) return;
-  // Use kana reading for accurate pronunciation; fall back to written form
   const text = _currentVocabWord.r || _currentVocabWord.w;
   if (!text) return;
   if (window.speechSynthesis.speaking) window.speechSynthesis.cancel();
@@ -2513,7 +2543,6 @@ function speakVocabWord() {
   utter.rate = 0.8;
   const voice = getJpVoice();
   if (voice) utter.voice = voice;
-  // Visual feedback on button
   const btn = document.getElementById('spop-speak-btn');
   if (btn) { btn.style.opacity = '0.5'; utter.onend = () => { btn.style.opacity = ''; }; }
   window.speechSynthesis.speak(utter);
