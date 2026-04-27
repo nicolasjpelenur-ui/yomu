@@ -296,6 +296,8 @@
   .level-tab{padding:0.45rem 1.1rem;border:1px solid rgba(255,255,255,0.1);background:none;color:var(--muted);border-radius:1px;font-family:'Shippori Mincho',serif;font-size:0.9rem;cursor:pointer;transition:all 0.15s;}
   .level-tab:hover{border-color:rgba(255,255,255,0.3);color:var(--paper);}
   .level-tab.active{background:var(--accent);border-color:var(--accent);color:white;}
+  .dash-dojo-btn{flex:1;padding:0.45rem 0.75rem;border:1px solid var(--accent2);background:none;color:var(--accent2);border-radius:1px;font-family:'Shippori Mincho',serif;font-size:0.9rem;cursor:pointer;transition:all 0.15s;-webkit-tap-highlight-color:transparent;letter-spacing:0.06em;text-align:center;}
+  .dash-dojo-btn:hover{background:rgba(29,158,117,0.1);}
 
   /* stats bar */
   .stats-row{display:flex;gap:0;margin-top:1.5rem;border:1px solid rgba(255,255,255,0.08);border-radius:2px;overflow:hidden;}
@@ -425,6 +427,8 @@
   .session-opt.wrong{background:rgba(139,26,26,0.2);border-color:var(--accent);color:var(--accent);}
   .session-opt.reveal{background:rgba(29,158,117,0.12);border-color:rgba(29,158,117,0.5);color:#1D9E75;}
   .session-opt:disabled{cursor:default;}
+  .session-char.vocab-word{font-size:clamp(2rem,11vw,3.5rem);padding:1.8rem 1rem 1.2rem;}
+  .session-opt.vocab-opt{font-size:0.82rem;line-height:1.35;min-height:4rem;letter-spacing:0.02em;}
   #dojo-results{display:none;padding:1.5rem 1.25rem;}
   .results-score{font-family:'Shippori Mincho',serif;font-size:3.5rem;color:var(--paper);text-align:center;line-height:1;margin:0.5rem 0 0.25rem;}
   .results-label{font-size:0.72rem;letter-spacing:0.14em;color:var(--muted);text-align:center;margin-bottom:1.5rem;}
@@ -551,6 +555,8 @@
   body.light .story-tab.active{color:var(--accent2);border-bottom-color:var(--accent2);}
   body.light .level-tab{border-color:rgba(30,10,22,0.14);color:var(--muted);}
   body.light .level-tab.active{background:var(--accent);border-color:var(--accent);color:#fff !important;}
+  body.light .dash-dojo-btn{border-color:var(--accent2);color:var(--accent2);background:#f0e5ed;}
+  body.light .dash-dojo-btn:hover{background:rgba(10,110,75,0.1);}
   body.light .grammar-section{border-color:rgba(140,34,72,0.2);background:rgba(140,34,72,0.03);}
   body.light .grammar-toggle{color:var(--accent2);}
   body.light .part-actions{border-color:rgba(30,10,22,0.1);}
@@ -583,6 +589,7 @@
   body.light .dojo-stat-lbl{color:var(--muted);}
   body.light .kana-table td{border-color:rgba(30,10,22,0.09);}
   body.light .kana-table td.header-cell{color:rgba(110,58,88,0.5);border:none;}
+  body.light #dojo-vocab-info{border-color:rgba(30,10,22,0.12);background:#f0e5ed;}
   body.light .session-progress{background:rgba(30,10,22,0.08);}
   body.light .session-opt{border-color:rgba(30,10,22,0.18);background:#f0e5ed;}
   body.light .session-opt:active{opacity:0.7;}
@@ -686,6 +693,7 @@
     .stat-val{font-size:1.2rem;}
     .level-tabs{gap:4px;}
     .level-tab{padding:0.4rem 0.7rem;font-size:0.82rem;}
+    .dash-dojo-btn{padding:0.4rem 0.6rem;font-size:0.82rem;}
     .theme-toggle-btn{padding:0.6rem 0.75rem;}
     .theme-icon{font-size:0.9rem;}
     .theme-name{font-size:0.9rem;}
@@ -763,6 +771,7 @@
       <button class="level-tab" data-level="N3" onclick="setDashLevel('N3')">N3</button>
       <button class="level-tab" data-level="N2" onclick="setDashLevel('N2')">N2</button>
       <button class="level-tab" data-level="N1" onclick="setDashLevel('N1')">N1</button>
+      <button class="dash-dojo-btn" onclick="openDojo()" aria-label="Open Dojo">道場</button>
     </div>
     <div class="level-progress-row">
       <div class="lp-ring">
@@ -847,7 +856,7 @@
     <div class="sb-section-title">Practice</div>
     <button class="sb-dojo-btn" onclick="openDojo();">
       <div class="sb-dojo-label">Dojo</div>
-      <div class="sb-dojo-sub">Kana Recognition</div>
+      <div class="sb-dojo-sub">Kana and Word Recognition</div>
     </button>
 
     <!-- Stories -->
@@ -904,13 +913,14 @@
     <div class="dojo-syllabary-tabs">
       <button class="dojo-syl-tab active" onclick="setDojoSyllabary('hiragana', this)">ひらがな</button>
       <button class="dojo-syl-tab" onclick="setDojoSyllabary('katakana', this)">カタカナ</button>
+      <button class="dojo-syl-tab" onclick="setDojoMode('vocab', this)">語彙</button>
     </div>
 
     <!-- Stats row -->
     <div class="dojo-stats-row">
       <div class="dojo-stat">
         <div class="dojo-stat-val" id="dojo-stat-correct">—</div>
-        <div class="dojo-stat-lbl">Best Score</div>
+        <div class="dojo-stat-lbl" id="dojo-stat-correct-lbl">Best Score</div>
       </div>
       <div class="dojo-stat">
         <div class="dojo-stat-val" id="dojo-stat-sessions">0</div>
@@ -918,9 +928,12 @@
       </div>
       <div class="dojo-stat">
         <div class="dojo-stat-val" id="dojo-stat-mastery">0<span style="font-size:0.7rem;color:var(--muted)">/46</span></div>
-        <div class="dojo-stat-lbl">Mastered</div>
+        <div class="dojo-stat-lbl" id="dojo-stat-mastery-lbl">Mastered</div>
       </div>
     </div>
+
+    <!-- Vocab pending notice (shown in vocab mode) -->
+    <div id="dojo-vocab-info" style="display:none;margin-bottom:1.25rem;padding:0.75rem 1rem;border:1px solid rgba(255,255,255,0.07);border-radius:2px;font-size:0.83rem;color:var(--muted);text-align:center;line-height:1.55;"></div>
 
     <!-- Kana reference table -->
     <div class="kana-table-wrap">
@@ -2272,9 +2285,11 @@ const KANA_TABLE_ROWS = [
 
 // ── DOJO STATE ─────────────────────────────────────────────────────────────────
 let dojoSyllabary = 'hiragana';
+let dojoMode = 'kana'; // 'kana' | 'vocab'
+let _vocabOptions = [];
 let dojoSession = {
   pool: [], queue: [], round: 0, totalRounds: 10,
-  correct: 0, missed: [], answered: false
+  correct: 0, missed: [], answered: false, mode: 'kana'
 };
 let dojoStats = {};
 
@@ -2560,6 +2575,8 @@ function openDojo() {
   document.getElementById('stats-screen').style.display = 'none';
   loadDojoStats();
   document.getElementById('dojo-screen').style.display = 'block';
+  // Reset to kana mode on open so tabs always match default active state
+  dojoMode = 'kana';
   showDojoSelect();
 }
 function closeDojo() {
@@ -2567,10 +2584,24 @@ function closeDojo() {
 }
 
 function setDojoSyllabary(syl, btn) {
+  dojoMode = 'kana';
   dojoSyllabary = syl;
   document.querySelectorAll('.dojo-syl-tab').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
+  const tw = document.querySelector('.kana-table-wrap');
+  if (tw) tw.style.display = '';
+  const vi = document.getElementById('dojo-vocab-info');
+  if (vi) vi.style.display = 'none';
   renderDojoTable();
+  updateDojoStats();
+}
+
+function setDojoMode(mode, btn) {
+  dojoMode = mode;
+  document.querySelectorAll('.dojo-syl-tab').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  const tw = document.querySelector('.kana-table-wrap');
+  if (tw) tw.style.display = 'none';
   updateDojoStats();
 }
 
@@ -2578,17 +2609,45 @@ function showDojoSelect() {
   document.getElementById('dojo-select').style.display = 'block';
   document.getElementById('dojo-session').style.display = 'none';
   document.getElementById('dojo-results').style.display = 'none';
-  renderDojoTable();
+  const tw = document.querySelector('.kana-table-wrap');
+  if (tw) tw.style.display = dojoMode === 'vocab' ? 'none' : '';
+  if (dojoMode !== 'vocab') renderDojoTable();
   updateDojoStats();
 }
 
 function updateDojoStats() {
+  const lbl1 = document.getElementById('dojo-stat-correct-lbl');
+  const lbl3 = document.getElementById('dojo-stat-mastery-lbl');
+  const vi = document.getElementById('dojo-vocab-info');
+
+  if (dojoMode === 'vocab') {
+    const pending = N5_VOCAB.filter(v => getMastery(v.w) === 'pending');
+    const vp = dojoStats.vocabProgress || {};
+    const masteredViaDojo = Object.keys(vp).filter(w => (vp[w] || 0) >= 3).length;
+    const vstats = dojoStats.vocab || {};
+    if (lbl1) lbl1.textContent = 'Pending';
+    if (lbl3) lbl3.textContent = 'Dojo Mastered';
+    document.getElementById('dojo-stat-correct').textContent = pending.length;
+    document.getElementById('dojo-stat-sessions').textContent = vstats.sessions || 0;
+    document.getElementById('dojo-stat-mastery').innerHTML = `${masteredViaDojo}`;
+    if (vi) {
+      vi.style.display = 'block';
+      vi.textContent = pending.length
+        ? `${pending.length} word${pending.length === 1 ? '' : 's'} to review — answer 3 times correctly to master each.`
+        : 'No pending words yet. Read stories and tap words to track them.';
+    }
+    return;
+  }
+
+  // Kana mode
+  if (lbl1) lbl1.textContent = 'Best Score';
+  if (lbl3) lbl3.textContent = 'Mastered';
+  if (vi) vi.style.display = 'none';
   const key = dojoSyllabary;
   const stats = dojoStats[key] || {};
   const sessions = stats.sessions || 0;
   const best = stats.best !== undefined ? `${stats.best}/10` : '—';
   const kanaArr = dojoSyllabary === 'hiragana' ? HIRAGANA : KATAKANA;
-  // "mastered" = seen at least once with correct answer (no errors logged)
   const mastered = kanaArr.filter(([ch]) => {
     const e = (stats.errors || {})[ch] || 0;
     const s = (stats.seen || {})[ch] || 0;
@@ -2630,6 +2689,7 @@ function renderDojoTable() {
 
 // ── SESSION ENGINE ─────────────────────────────────────────────────────────────
 function startDojoSession() {
+  if (dojoMode === 'vocab') { startVocabSession(); return; }
   const kanaArr = dojoSyllabary === 'hiragana' ? HIRAGANA : KATAKANA;
   const stats = (dojoStats[dojoSyllabary] || {});
   const errors = stats.errors || {};
@@ -2666,7 +2726,7 @@ function startDojoSession() {
     }
   }
 
-  dojoSession = { pool: kanaArr, queue: picked, round: 0, totalRounds: 10, correct: 0, missed: [], answered: false };
+  dojoSession = { pool: kanaArr, queue: picked, round: 0, totalRounds: 10, correct: 0, missed: [], answered: false, mode: 'kana' };
 
   document.getElementById('dojo-select').style.display = 'none';
   document.getElementById('dojo-results').style.display = 'none';
@@ -2685,7 +2745,9 @@ function renderSessionRound() {
   // Progress bar
   document.getElementById('session-prog').style.width = `${(round / totalRounds) * 100}%`;
   document.getElementById('session-counter').textContent = `${round + 1} / ${totalRounds}`;
-  document.getElementById('session-char').textContent = ch;
+  const charEl = document.getElementById('session-char');
+  charEl.textContent = ch;
+  charEl.classList.remove('vocab-word');
 
   // Generate 4 options: correct + 3 distractors
   // Prioritise same-row distractors for harder practice
@@ -2748,33 +2810,45 @@ function showResults() {
   const key = dojoSyllabary;
 
   // Update session count and best score
-  if (!dojoStats[key]) dojoStats[key] = { errors: {}, seen: {}, sessions: 0 };
-  dojoStats[key].sessions = (dojoStats[key].sessions || 0) + 1;
-  if (dojoStats[key].best === undefined || correct > dojoStats[key].best) {
-    dojoStats[key].best = correct;
+  if (dojoSession.mode === 'vocab') {
+    if (!dojoStats.vocab) dojoStats.vocab = { sessions: 0 };
+    dojoStats.vocab.sessions = (dojoStats.vocab.sessions || 0) + 1;
+  } else {
+    if (!dojoStats[key]) dojoStats[key] = { errors: {}, seen: {}, sessions: 0 };
+    dojoStats[key].sessions = (dojoStats[key].sessions || 0) + 1;
+    if (dojoStats[key].best === undefined || correct > dojoStats[key].best) {
+      dojoStats[key].best = correct;
+    }
+    markDailyKanaDone();
   }
   saveDojoStats();
-  markDailyKanaDone();
 
   document.getElementById('dojo-session').style.display = 'none';
   document.getElementById('dojo-results').style.display = 'block';
 
   document.getElementById('results-score').textContent = `${correct}/${totalRounds}`;
 
+  const pct = totalRounds ? correct / totalRounds : 0;
   let label = '';
-  if (correct === 10) label = '完璧！ Perfect';
-  else if (correct >= 8) label = 'とても上手！ Very good';
-  else if (correct >= 6) label = 'いいですね Well done';
-  else if (correct >= 4) label = 'もう少し Keep going';
+  if (pct === 1) label = '完璧！ Perfect';
+  else if (pct >= 0.8) label = 'とても上手！ Very good';
+  else if (pct >= 0.6) label = 'いいですね Well done';
+  else if (pct >= 0.4) label = 'もう少し Keep going';
   else label = '練習しましょう — Let\'s practice';
   document.getElementById('results-label').textContent = label;
 
-  // Missed characters
+  // Missed items
   const missedEl = document.getElementById('results-missed');
   if (missed.length > 0) {
-    missedEl.innerHTML = `<div class="results-missed-title">Review these</div><div class="missed-chars">${
-      missed.map(([ch, rom]) => `<div class="missed-char">${ch}<span>${rom}</span></div>`).join('')
-    }</div>`;
+    if (dojoSession.mode === 'vocab') {
+      missedEl.innerHTML = `<div class="results-missed-title">Review these</div><div class="missed-chars">${
+        missed.map(v => `<div class="missed-char" style="font-size:1.15rem;">${v.w}<span style="font-size:0.7rem;letter-spacing:0.02em;">${v.m}</span></div>`).join('')
+      }</div>`;
+    } else {
+      missedEl.innerHTML = `<div class="results-missed-title">Review these</div><div class="missed-chars">${
+        missed.map(([ch, rom]) => `<div class="missed-char">${ch}<span>${rom}</span></div>`).join('')
+      }</div>`;
+    }
   } else {
     missedEl.innerHTML = '<div class="results-missed-title" style="color:var(--accent2)">No mistakes — 完璧！</div>';
   }
@@ -2794,6 +2868,107 @@ document.addEventListener('keydown', e => {
   }
 });
 
+
+// ── VOCAB SESSION ENGINE ───────────────────────────────────────────────────────
+function startVocabSession() {
+  const pending = N5_VOCAB.filter(v => getMastery(v.w) === 'pending');
+  if (!pending.length) {
+    updateDojoStats(); // refresh the "no pending words" message
+    return;
+  }
+  const shuffled = [...pending].sort(() => Math.random() - 0.5);
+  const picked = shuffled.slice(0, Math.min(10, shuffled.length));
+
+  dojoSession = {
+    pool: N5_VOCAB,
+    queue: picked,
+    round: 0,
+    totalRounds: picked.length,
+    correct: 0,
+    missed: [],
+    answered: false,
+    mode: 'vocab'
+  };
+
+  document.getElementById('dojo-select').style.display = 'none';
+  document.getElementById('dojo-results').style.display = 'none';
+  document.getElementById('dojo-session').style.display = 'block';
+  renderVocabRound();
+}
+
+function renderVocabRound() {
+  const { queue, round, totalRounds } = dojoSession;
+  if (round >= totalRounds) { showResults(); return; }
+
+  const vocab = queue[round];
+  dojoSession.answered = false;
+
+  document.getElementById('session-prog').style.width = `${(round / totalRounds) * 100}%`;
+  document.getElementById('session-counter').textContent = `${round + 1} / ${totalRounds}`;
+  const charEl = document.getElementById('session-char');
+  charEl.textContent = vocab.w;
+  charEl.classList.add('vocab-word');
+
+  // 4 options: 1 correct + 3 distractors with distinct meanings
+  const correct = vocab.m;
+  const used = new Set([correct]);
+  const distractors = [];
+  const pool = [...N5_VOCAB].sort(() => Math.random() - 0.5);
+  for (const v of pool) {
+    if (!used.has(v.m)) { distractors.push(v.m); used.add(v.m); }
+    if (distractors.length >= 3) break;
+  }
+
+  _vocabOptions = [correct, ...distractors].sort(() => Math.random() - 0.5);
+  const optEl = document.getElementById('session-options');
+  optEl.innerHTML = _vocabOptions.map((opt, i) =>
+    `<button class="session-opt vocab-opt" onclick="answerVocabDojo(${i})">${opt}</button>`
+  ).join('');
+}
+
+function answerVocabDojo(idx) {
+  if (dojoSession.answered) return;
+  dojoSession.answered = true;
+
+  const chosen = _vocabOptions[idx];
+  const vocab = dojoSession.queue[dojoSession.round];
+  const correct = vocab.m;
+  const isCorrect = chosen === correct;
+  const w = vocab.w;
+
+  if (!dojoStats.vocabProgress) dojoStats.vocabProgress = {};
+  if (!dojoStats.vocab) dojoStats.vocab = { sessions: 0 };
+
+  if (isCorrect) {
+    dojoSession.correct++;
+    dojoStats.vocabProgress[w] = (dojoStats.vocabProgress[w] || 0) + 1;
+    // 3 consecutive correct → mark mastered
+    if (dojoStats.vocabProgress[w] >= 3) {
+      delete state.tappedWords[w];
+      saveState();
+      delete dojoStats.vocabProgress[w];
+    }
+  } else {
+    dojoStats.vocabProgress[w] = 0; // reset consecutive counter
+    dojoSession.missed.push(vocab);
+  }
+  saveDojoStats();
+
+  const btns = document.querySelectorAll('.session-opt');
+  const correctIdx = _vocabOptions.indexOf(correct);
+  btns.forEach((btn, i) => {
+    btn.disabled = true;
+    if (i === idx && isCorrect) btn.classList.add('correct');
+    if (i === idx && !isCorrect) btn.classList.add('wrong');
+    if (!isCorrect && i === correctIdx) btn.classList.add('reveal');
+  });
+
+  const delay = isCorrect ? 600 : 1100;
+  setTimeout(() => {
+    dojoSession.round++;
+    renderVocabRound();
+  }, delay);
+}
 
 // ── DAILY SESSION ─────────────────────────────────────────────────────────────
 // N5 kanji rotation (80 chars, one per day cycling)
