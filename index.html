@@ -296,7 +296,11 @@
   .level-tab{padding:0.45rem 1.1rem;border:1px solid rgba(255,255,255,0.1);background:none;color:var(--muted);border-radius:1px;font-family:'Shippori Mincho',serif;font-size:0.9rem;cursor:pointer;transition:all 0.15s;}
   .level-tab:hover{border-color:rgba(255,255,255,0.3);color:var(--paper);}
   .level-tab.active{background:var(--accent);border-color:var(--accent);color:white;}
-  .dash-dojo-btn{flex:1;padding:0.45rem 0.75rem;border:1px solid var(--accent2);background:none;color:var(--accent2);border-radius:1px;font-family:'Shippori Mincho',serif;font-size:0.9rem;cursor:pointer;transition:all 0.15s;-webkit-tap-highlight-color:transparent;letter-spacing:0.06em;text-align:center;}
+  .dash-level-dojo-row{display:flex;gap:10px;align-items:flex-start;margin-top:1.75rem;}
+  .dash-level-col{flex:0 0 auto;}
+  .dash-dojo-col{flex:1;display:flex;flex-direction:column;}
+  .dash-level-dojo-row .dash-section-title{margin-top:0;}
+  .dash-dojo-btn{width:100%;padding:0.45rem 0.75rem;border:1px solid var(--accent2);background:none;color:var(--accent2);border-radius:1px;font-family:'Shippori Mincho',serif;font-size:0.9rem;cursor:pointer;transition:all 0.15s;-webkit-tap-highlight-color:transparent;letter-spacing:0.06em;text-align:center;}
   .dash-dojo-btn:hover{background:rgba(29,158,117,0.1);}
 
   /* stats bar */
@@ -693,7 +697,7 @@
     .stat-val{font-size:1.2rem;}
     .level-tabs{gap:4px;}
     .level-tab{padding:0.4rem 0.7rem;font-size:0.82rem;}
-    .dash-dojo-btn{padding:0.4rem 0.6rem;font-size:0.82rem;}
+    .dash-dojo-btn{padding:0.4rem 0.7rem;font-size:0.82rem;}
     .theme-toggle-btn{padding:0.6rem 0.75rem;}
     .theme-icon{font-size:0.9rem;}
     .theme-name{font-size:0.9rem;}
@@ -764,14 +768,21 @@
       <div class="stat-cell"><div class="stat-val" id="dash-streak-val">0</div><div class="stat-lbl">Day Streak</div></div>
       <div class="stat-cell"><div class="stat-val" id="dash-today">0</div><div class="stat-lbl">Today</div></div>
     </div>
-    <div class="dash-section-title" id="dash-level-section">Level</div>
-    <div class="level-tabs">
-      <button class="level-tab active" data-level="N5" onclick="setDashLevel('N5')">N5</button>
-      <button class="level-tab" data-level="N4" onclick="setDashLevel('N4')">N4</button>
-      <button class="level-tab" data-level="N3" onclick="setDashLevel('N3')">N3</button>
-      <button class="level-tab" data-level="N2" onclick="setDashLevel('N2')">N2</button>
-      <button class="level-tab" data-level="N1" onclick="setDashLevel('N1')">N1</button>
-      <button class="dash-dojo-btn" onclick="openDojo()" aria-label="Open Dojo">道場</button>
+    <div class="dash-level-dojo-row">
+      <div class="dash-level-col">
+        <div class="dash-section-title" id="dash-level-section">Level</div>
+        <div class="level-tabs">
+          <button class="level-tab active" data-level="N5" onclick="setDashLevel('N5')">N5</button>
+          <button class="level-tab" data-level="N4" onclick="setDashLevel('N4')">N4</button>
+          <button class="level-tab" data-level="N3" onclick="setDashLevel('N3')">N3</button>
+          <button class="level-tab" data-level="N2" onclick="setDashLevel('N2')">N2</button>
+          <button class="level-tab" data-level="N1" onclick="setDashLevel('N1')">N1</button>
+        </div>
+      </div>
+      <div class="dash-dojo-col">
+        <div class="dash-section-title">Dojo</div>
+        <button class="dash-dojo-btn" onclick="openDojo()" aria-label="Open Dojo">道場</button>
+      </div>
     </div>
     <div class="level-progress-row">
       <div class="lp-ring">
