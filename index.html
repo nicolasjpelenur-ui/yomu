@@ -109,6 +109,15 @@
   .continue-btn.primary{background:var(--accent);border-color:var(--accent);}
   .continue-btn.primary:hover{background:#6b1010;}
   .continue-btn:disabled{opacity:0.3;cursor:not-allowed;}
+  /* Part arrow navigation */
+  .part-nav{display:flex;margin-top:0.5rem;padding-top:1.5rem;border-top:1px solid rgba(255,255,255,0.06);}
+  .part-nav-btn{flex:1;min-height:56px;background:none;border:1px solid rgba(255,255,255,0.14);color:var(--muted);cursor:pointer;font-size:1.3rem;display:flex;align-items:center;justify-content:center;transition:all 0.18s;-webkit-tap-highlight-color:transparent;}
+  .part-nav-btn:first-child{border-radius:2px 0 0 2px;}
+  .part-nav-btn:last-child{border-radius:0 2px 2px 0;border-left:none;}
+  .part-nav-btn:active{background:rgba(255,255,255,0.06);}
+  .part-nav-btn.fwd{color:var(--paper);border-color:rgba(255,255,255,0.28);}
+  .part-nav-btn.fwd:active{background:rgba(255,255,255,0.08);}
+  .part-nav-btn.dim{opacity:0.28;}
 
   /* inline part loading */
   .part-loading{display:none;align-items:center;gap:10px;padding:1.5rem 0;color:var(--muted);font-size:0.8rem;letter-spacing:0.1em;}
@@ -258,8 +267,10 @@
   .stagger>*:nth-child(7){animation-delay:0.65s}
   .stagger>*:nth-child(8){animation-delay:0.75s}
   @keyframes fadeIn{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
-  @keyframes partSlideIn{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
-  .part-enter{animation:partSlideIn 0.28s cubic-bezier(0.22,1,0.36,1) forwards;}
+  @keyframes partEnterForward{from{opacity:0;transform:translateX(32px)}to{opacity:1;transform:translateX(0)}}
+  @keyframes partEnterBack{from{opacity:0;transform:translateX(-32px)}to{opacity:1;transform:translateX(0)}}
+  .part-enter-fwd{animation:partEnterForward 0.3s cubic-bezier(0.22,1,0.36,1) forwards;}
+  .part-enter-back{animation:partEnterBack 0.3s cubic-bezier(0.22,1,0.36,1) forwards;}
 
   /* ── DASHBOARD ─────────────────────────────────────────────────────────── */
   #dashboard-screen{display:block;min-height:100vh;background:var(--ink);}
@@ -277,6 +288,7 @@
   .dash-logo{font-family:'Shippori Mincho',serif;font-size:1.6rem;color:var(--paper);opacity:0.85;letter-spacing:0.05em;}
   .dash-logo span{color:var(--accent);font-size:1rem;font-family:'DM Serif Display',serif;font-style:italic;margin-left:0.5rem;opacity:0.7;}
   .dash-body{max-width:760px;margin:0 auto;padding:1.5rem 1.25rem 6rem;}
+  #panel-curated{scroll-margin-top:72px;}
 
   /* level selector */
   .dash-section-title{font-size:0.62rem;letter-spacing:0.18em;text-transform:uppercase;color:var(--muted);margin-bottom:0.75rem;margin-top:1.75rem;}
@@ -545,6 +557,10 @@
   body.light .continue-btn{border-color:rgba(30,10,22,0.22);color:var(--paper);}
   body.light .continue-btn:hover{background:rgba(30,10,22,0.05);}
   body.light .continue-btn.primary{background:var(--accent);border-color:var(--accent);color:#fff;}
+  body.light .part-nav{border-color:rgba(30,10,22,0.1);}
+  body.light .part-nav-btn{border-color:rgba(30,10,22,0.18);}
+  body.light .part-nav-btn.fwd{border-color:rgba(30,10,22,0.3);color:var(--paper);}
+  body.light .part-nav-btn:active{background:rgba(30,10,22,0.05);}
   body.light .vocab-panel{border-color:rgba(30,10,22,0.1);}
   body.light .vocab-pill{background:#ede0ea;border-color:rgba(30,10,22,0.12);}
   body.light .vocab-pill:hover{border-color:var(--accent2);}
@@ -829,7 +845,7 @@
 
     <!-- KanaDojo entry -->
     <div class="sb-section-title">Practice</div>
-    <button class="sb-dojo-btn" onclick="openDojo(); closeSidebar();">
+    <button class="sb-dojo-btn" onclick="openDojo();">
       <div class="sb-dojo-label">Dojo</div>
       <div class="sb-dojo-sub">Kana Recognition</div>
     </button>
@@ -1432,6 +1448,9 @@ async function startCuratedStory(storyId) {
   state.lastReadDates[storyId] = todayStr();
   document.getElementById('dashboard-screen').style.display = 'none';
   document.getElementById('reader-screen').style.display = 'block';
+  window.scrollTo(0, 0);
+  const rb = document.getElementById('reader-body');
+  if (rb) rb.scrollTop = 0;
   updateHeader();
   resetScaffold();
   await renderCuratedPart(story, 1);
@@ -1510,24 +1529,42 @@ function newStory() {
   showDashboard();
 }
 
-// ── CONTINUE (Parts 2 & 3) ───────────────────────────────────────────────────
+// ── PART NAVIGATION ──────────────────────────────────────────────────────────
+let _partDir = 'fwd'; // 'fwd' | 'back'
+
+async function _transitionPart(renderFn) {
+  const sc = document.getElementById('story-content');
+  if (sc) {
+    const exitDir = _partDir === 'fwd' ? -36 : 36;
+    sc.style.transition = 'opacity 0.15s ease, transform 0.15s ease';
+    sc.style.opacity = '0';
+    sc.style.transform = `translateX(${exitDir}px)`;
+    await new Promise(r => setTimeout(r, 160));
+    sc.style.transition = '';
+    sc.style.transform = '';
+  }
+  await renderFn();
+}
+
 async function continuePart() {
   if (!state.arc || state.currentPart >= 3) { showDashboard(); return; }
   if (state.curatedMode && state.curatedStoryId) {
     const story = CURATED_STORIES.find(s => s.id === state.curatedStoryId);
     if (story) {
-      // Fade out current content, then load next part
-      const sc = document.getElementById('story-content');
-      if (sc) {
-        sc.style.transition = 'opacity 0.18s ease';
-        sc.style.opacity = '0';
-        await new Promise(r => setTimeout(r, 190));
-      }
-      await renderCuratedPart(story, state.currentPart + 1);
+      _partDir = 'fwd';
+      await _transitionPart(() => renderCuratedPart(story, state.currentPart + 1));
       return;
     }
   }
   showDashboard();
+}
+
+async function prevPart() {
+  if (!state.curatedMode || !state.curatedStoryId || state.currentPart <= 1) return;
+  const story = CURATED_STORIES.find(s => s.id === state.curatedStoryId);
+  if (!story) return;
+  _partDir = 'back';
+  await _transitionPart(() => renderCuratedPart(story, state.currentPart - 1));
 }
 
 // ── RENDERING ────────────────────────────────────────────────────────────────
@@ -1624,15 +1661,23 @@ function renderPart(result, partNum) {
   document.getElementById('part-indicator').innerHTML = dotsHTML;
 
   // Action buttons
+  const backBtn = partNum > 1
+    ? `<button class="part-nav-btn" onclick="prevPart()" aria-label="Previous part"><svg viewBox="0 0 20 20" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M13 4l-6 6 6 6"/></svg></button>`
+    : `<button class="part-nav-btn" disabled style="opacity:0.15;pointer-events:none;" aria-hidden="true"><svg viewBox="0 0 20 20" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M13 4l-6 6 6 6"/></svg></button>`;
+  const chevronR = `<svg viewBox="0 0 20 20" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4l6 6-6 6"/></svg>`;
   let actionsHTML = '';
   if (partNum < 3) {
     actionsHTML = `
-      <div class="part-actions">
-        <button class="continue-btn primary" onclick="continuePart()">続き — Part ${partNum + 1} →</button>
-        <button class="continue-btn" onclick="showDashboard()">← Stories</button>
+      <div class="part-nav">
+        ${backBtn}
+        <button class="part-nav-btn fwd" onclick="continuePart()" aria-label="Next part">${chevronR}</button>
       </div>`;
   } else {
     actionsHTML = `
+      <div class="part-nav">
+        ${backBtn}
+        <button class="part-nav-btn fwd" onclick="showDashboard()" aria-label="Back to stories"><svg viewBox="0 0 20 20" width="18" height="18" fill="currentColor" style="opacity:0.75"><path d="M10 2.5L2 9.5h2V17h5v-4.5h2V17h5V9.5h2L10 2.5z"/></svg></button>
+      </div>
       <div id="matcher-zone"></div>
       <div id="difficulty-zone" style="display:none;">
         <div class="part-actions">
@@ -1643,10 +1688,7 @@ function renderPart(result, partNum) {
             <button class="diff-btn" id="diff-hard" onclick="applyDifficulty('hard')">too hard</button>
           </div>
         </div>
-        <div class="part-actions" style="margin-top:0.75rem;">
-          <button class="continue-btn primary" onclick="showDashboard()">← Stories</button>
-          <button class="continue-btn" onclick="showDashboard()">← Dashboard</button>
-        </div>
+        <div style="height:0.75rem;"></div>
         <div id="story-status-row" style="display:none;margin-top:0.75rem;padding:0.75rem 0;border-top:1px solid rgba(255,255,255,0.06);">
           <div style="font-size:0.62rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted);margin-bottom:0.5rem;">Mark this story</div>
           <div style="display:flex;gap:8px;">
@@ -1675,21 +1717,19 @@ function renderPart(result, partNum) {
       <div class="vocab-list">${vocabHTML}</div>
     </div>
     <div class="keyboard-hint"><kbd>Space</kbd> continue &nbsp; <kbd>F</kbd> furigana</div>
-    <div class="swipe-hint">swipe left for next part</div>
+    <div class="swipe-hint">swipe to navigate parts</div>
     <div class="story-footer">${state.storiesRead} ${state.storiesRead === 1 ? 'story' : 'stories'} read · ${Object.keys(state.seenWords).length} words encountered</div>`;
 
-  // Trigger fade-in animation on new content
+  // Trigger directional slide-in animation on new content
   const scEl = document.getElementById('story-content');
   if (scEl) {
-    scEl.classList.remove('part-enter');
+    scEl.style.opacity = '1';
+    scEl.style.transform = '';
+    scEl.classList.remove('part-enter-fwd', 'part-enter-back');
     void scEl.offsetWidth; // force reflow
-    scEl.classList.add('part-enter');
+    scEl.classList.add(_partDir === 'back' ? 'part-enter-back' : 'part-enter-fwd');
   }
   updateHeader();
-  // Scroll to top of reader body smoothly
-  const rb = document.getElementById('reader-body');
-  if (rb) rb.scrollTo({ top: 0, behavior: 'smooth' });
-  window.scrollTo({ top: 0, behavior: 'smooth' });
   if (partNum === 3) {
     // Mark curated story as completed
     if (state.curatedMode && state.curatedStoryId) {
@@ -2058,7 +2098,6 @@ window.addEventListener('scroll', updateReadingProgress, { passive: true });
 
 // ── SWIPE GESTURES ────────────────────────────────────────────────────────────
 let swipeStartX = 0, swipeStartY = 0;
-
 document.addEventListener('touchstart', e => {
   swipeStartX = e.touches[0].clientX;
   swipeStartY = e.touches[0].clientY;
@@ -2066,15 +2105,19 @@ document.addEventListener('touchstart', e => {
 
 document.addEventListener('touchend', e => {
   if (document.getElementById('word-sheet').classList.contains('open')) return;
+  // Only handle swipes inside reader
+  if (document.getElementById('reader-screen').style.display === 'none') return;
   const dx = e.changedTouches[0].clientX - swipeStartX;
   const dy = e.changedTouches[0].clientY - swipeStartY;
-  if (Math.abs(dx) < 60 || Math.abs(dy) > Math.abs(dx) * 0.8) return;
-  if (dx < -60) {
-    // swipe left = next
+  // Must be mostly horizontal and at least 55px
+  if (Math.abs(dx) < 55 || Math.abs(dy) > Math.abs(dx) * 0.65) return;
+  if (dx < 0) {
+    // swipe left = next part
     if (state.currentPart > 0 && state.currentPart < 3) continuePart();
     else if (state.currentPart === 3) showDashboard();
-  } else if (dx > 60) {
-    // swipe right = nothing for now (could go back to part 1 in future)
+  } else {
+    // swipe right = previous part
+    if (state.currentPart > 1) prevPart();
   }
 }, { passive: true });
 
@@ -2234,14 +2277,12 @@ function goToLevel(lvl) {
   closeSidebar();
   state.level = lvl;
   saveState();
-  // Small delay to let sidebar close before dashboard interaction
   setTimeout(function() {
     showDashboard();
-    // Scroll to level section so user sees tabs + stories
     setTimeout(function() {
-      const el = document.getElementById('dash-level-section');
+      const el = document.getElementById('panel-curated');
       if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }, 100);
+    }, 120);
   }, 320);
 }
 
@@ -2484,6 +2525,10 @@ function closeWordPopover() {
 }
 
 function openDojo() {
+  closeSidebar();
+  document.getElementById('dashboard-screen').style.display = 'none';
+  document.getElementById('reader-screen').style.display = 'none';
+  document.getElementById('stats-screen').style.display = 'none';
   loadDojoStats();
   document.getElementById('dojo-screen').style.display = 'block';
   showDojoSelect();
